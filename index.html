@@ -27,6 +27,7 @@
     padding:0 16px; z-index:50;
     border-bottom: 1px solid rgba(255, 182, 193, 0.15);
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    will-change: transform;
   }
   #header .title-area { display: flex; align-items: center; gap: 8px; }
   #header .title {
@@ -42,6 +43,7 @@
     cursor: pointer;
     animation: customPathMotion 4s infinite cubic-bezier(0.25, 1, 0.5, 1);
     transform-origin: center;
+    will-change: transform;
   }
 
   /* Buttons Styling */
@@ -58,18 +60,35 @@
   }
   #addBtn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 117, 140, 0.6); }
 
-  /* Selection Bar Header ke neeche aur Grid ke upar */
+  /* Selection Bar — sticky below header */
   #selectionBar {
     display: none; align-items: center; justify-content: space-between;
-    padding: 10px 16px 4px 16px; margin-bottom: 4px;
+    padding: 8px 16px;
+    position: fixed; top: 64px; left: 0; right: 0; z-index: 40;
+    background: rgba(20, 12, 28, 0.92);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 182, 193, 0.12);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
 
-  #selCount {
-    color:#ffb6c1; font-size:14px; font-weight: 600;
+  #selCountWrap {
     background: rgba(255, 182, 193, 0.15); padding: 6px 14px; border-radius: 12px;
     border: 1px solid rgba(255, 182, 193, 0.25);
   }
+  #selCount {
+    color:#ffb6c1; font-size:14px; font-weight: 600;
+  }
 
+  #cancelBtnWrap {}
+  #cancelSelBtn {
+    background: rgba(255, 182, 193, 0.12);
+    color: #ffb6c1; border: 1px solid rgba(255, 182, 193, 0.3);
+    padding: 8px 14px; border-radius: 25px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+
+  #delBtnWrap {}
   #delBtn {
     background: linear-gradient(135deg, #ff416c, #ff4b2b);
     color:#fff; border:none; padding:8px 16px; border-radius:25px;
@@ -82,6 +101,10 @@
     position:absolute; top:64px; left:0; right:0; bottom:0;
     overflow-y:auto; -webkit-overflow-scrolling:touch;
     padding: 6px 8px 40px 8px; z-index: 1;
+    transition: padding-top 0.2s ease;
+  }
+  #gridWrap.sel-active {
+    padding-top: 54px;
   }
   #grid {
     display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;
@@ -92,13 +115,14 @@
     position:relative; aspect-ratio:1/1; background:#1e1424; overflow:hidden; cursor:pointer;
     border-radius: 16px; border: 1px solid rgba(255, 182, 193, 0.1);
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s, box-shadow 0.3s;
-    animation: popUp 0.4s ease-out;
+    transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s;
+    animation: popUp 0.3s ease-out;
+    will-change: transform;
   }
   .cell:hover { transform: scale(1.03); border-color: rgba(255, 182, 193, 0.4); }
   .cell img {
     width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;
-    transition: transform 0.4s ease, filter 0.3s ease;
+    transition: transform 0.3s ease, filter 0.2s ease;
   }
   .cell:hover img { transform: scale(1.08); }
 
@@ -144,7 +168,7 @@
     border: 1px solid rgba(255, 182, 193, 0.2);
     box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 20px rgba(255, 117, 140, 0.2);
     display: flex; flex-direction: column; align-items: center; gap: 14px;
-    animation: fadeIn 0.4s ease-out;
+    animation: fadeIn 0.3s ease-out;
   }
   .progress-header {
     width: 100%; display: flex; justify-content: space-between; align-items: center;
@@ -158,7 +182,7 @@
   .progress-bar-fill {
     height: 100%; width: 0%;
     background: linear-gradient(90deg, #ff758c, #ff7eb3, #ffb6c1);
-    border-radius: 10px; transition: width 0.15s ease-out;
+    border-radius: 10px; transition: width 0.1s linear;
     box-shadow: 0 0 12px rgba(255, 117, 140, 0.8);
   }
   .heart-loader-icon {
@@ -168,7 +192,7 @@
   /* NO PHOTOS SCREEN */
   .no-photos-box {
     display: none; flex-direction: column; align-items: center; gap: 14px;
-    animation: fadeIn 0.5s ease-out;
+    animation: fadeIn 0.4s ease-out;
   }
   
   .empty-heart-wrap {
@@ -179,6 +203,7 @@
     font-size: 42px; box-shadow: 0 10px 25px rgba(255, 117, 140, 0.2);
     animation: customPathMotion 4s infinite cubic-bezier(0.25, 1, 0.5, 1);
     transform-origin: center;
+    will-change: transform;
   }
 
   @keyframes customPathMotion {
@@ -209,7 +234,7 @@
   /* Shimmer Placeholder */
   .cell.uploading {
     background: linear-gradient(90deg, #1e1424 25%, #2a1b33 50%, #1e1424 75%);
-    background-size: 200% 100%; animation: shimmer 1.4s infinite;
+    background-size: 200% 100%; animation: shimmer 1.2s infinite linear;
   }
 
   /* Modals */
@@ -221,7 +246,7 @@
   #confirmBox {
     background:#1c1221; border: 1px solid rgba(255, 182, 193, 0.2);
     border-radius:20px; padding:24px; width:82%; max-width:310px; text-align:center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6); animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
   #confirmBox p { color:#fff; font-size:15px; margin-bottom:18px; font-weight: 500; }
   #confirmBox .row { display:flex; gap:12px; }
@@ -236,7 +261,7 @@
     position:fixed; inset:0; background:rgba(10, 5, 12, 0.95);
     backdrop-filter: blur(15px); display:none; flex-direction:column;
     align-items:center; justify-content:center; z-index:100; overflow:hidden;
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.25s ease-out;
   }
   #lightboxHeader {
     position:absolute; top:0; left:0; right:0; height:64px;
@@ -254,8 +279,8 @@
   #lightboxImg {
     max-width:92%; max-height:82vh; border-radius:16px; object-fit:contain;
     box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 30px rgba(255, 117, 140, 0.2);
-    transition:transform .05s ease-out; transform-origin:center center; display:none;
-    animation: zoomIn 0.35s ease-out;
+    transform-origin: center center; display:none;
+    will-change: transform;
   }
   #lbLoading { position:absolute; width:100%; display:flex; justify-content:center; }
 
@@ -286,18 +311,25 @@
   </div>
 </div>
 
-<input type="file" id="fileInput" accept="image/*" multiple>
-
-<div id="gridWrap">
-  <!-- Selection Bar: Top left Counter & Top right Delete Button -->
-  <div id="selectionBar">
+<!-- Selection Bar: Sticky below header — outside gridWrap -->
+<div id="selectionBar">
+  <div id="selCountWrap">
     <span id="selCount">0 Selected</span>
+  </div>
+  <div id="cancelBtnWrap">
+    <button id="cancelSelBtn">✕ Cancel</button>
+  </div>
+  <div id="delBtnWrap">
     <button id="delBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="10" height="15"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6h16Z"/></svg>
       Delete
     </button>
   </div>
-  
+</div>
+
+<input type="file" id="fileInput" accept="image/*" multiple>
+
+<div id="gridWrap">
   <div id="grid"></div>
   
   <div id="empty">
@@ -390,6 +422,7 @@ const confirmOverlay = document.getElementById('confirmOverlay');
 const confirmText = document.getElementById('confirmText');
 const cancelDel = document.getElementById('cancelDel');
 const okDel = document.getElementById('okDel');
+const cancelSelBtn = document.getElementById('cancelSelBtn');
 const lightboxOverlay = document.getElementById('lightboxOverlay');
 const lightboxImg = document.getElementById('lightboxImg');
 const lbLoading = document.getElementById('lbLoading');
@@ -410,24 +443,48 @@ let longPressTimer = null;
 let startY = 0;
 let currentLightboxUrl = '';
 
+/* Local Storage Caching Strategy */
+const CACHE_KEY = 'zaina_photos_cache';
+
+function loadCachedPhotos() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      photos = JSON.parse(cached);
+      return true;
+    }
+  } catch (e) {
+    console.warn('LocalStorage error:', e);
+  }
+  return false;
+}
+
+function saveCachedPhotos(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('LocalStorage full or disabled:', e);
+  }
+}
+
 function animateProgress(fillEl, textEl, callback) {
   let val = 0;
   fillEl.style.width = '0%';
   textEl.textContent = '0%';
   
   const interval = setInterval(() => {
-    val += Math.floor(Math.random() * 14) + 6;
+    val += Math.floor(Math.random() * 20) + 10;
     if (val >= 100) {
       val = 100;
       fillEl.style.width = '100%';
       textEl.textContent = '100%';
       clearInterval(interval);
-      setTimeout(() => { if (callback) callback(); }, 180);
+      setTimeout(() => { if (callback) callback(); }, 100);
     } else {
       fillEl.style.width = val + '%';
       textEl.textContent = val + '%';
     }
-  }, 70);
+  }, 35);
 }
 
 function getFormattedDateTime(timestamp) {
@@ -443,8 +500,10 @@ function updateHeaderState() {
   if (n > 0) {
     selectionBar.style.display = 'flex';
     selCount.textContent = n + ' Selected';
+    gridWrap.classList.add('sel-active');
   } else {
     selectionBar.style.display = 'none';
+    gridWrap.classList.remove('sel-active');
   }
 }
 
@@ -457,11 +516,14 @@ function render() {
     emptyEl.style.display = 'flex';
     initSpinner.style.display = 'none';
     emptyText.style.display = 'flex';
+    grid.innerHTML = '';
+    return;
   } else {
     emptyEl.style.display = 'none';
   }
 
-  grid.innerHTML = '';
+  const fragment = document.createDocumentFragment();
+
   for (const [id, p] of list) {
     const cell = document.createElement('div');
     cell.className = 'cell' + (selected.has(id) ? ' selected' : '');
@@ -477,8 +539,34 @@ function render() {
     check.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
     cell.appendChild(check);
 
-    grid.appendChild(cell);
+    fragment.appendChild(cell);
   }
+
+  grid.innerHTML = '';
+  grid.appendChild(fragment);
+}
+
+function compressImage(file, maxDimension = 1200, quality = 0.75) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxDimension || h > maxDimension) {
+          if (w > h) { h = Math.round((h * maxDimension) / w); w = maxDimension; }
+          else { w = Math.round((w * maxDimension) / h); h = maxDimension; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function openLightbox(url) {
@@ -490,10 +578,8 @@ function openLightbox(url) {
   resetZoom();
   lightboxImg.src = url;
 
-  animateProgress(lbProgressBarFill, lbProgressText, () => {
-    lbLoading.style.display = 'none';
-    lightboxImg.style.display = 'block';
-  });
+  lbLoading.style.display = 'none';
+  lightboxImg.style.display = 'block';
 
   history.pushState({ lightboxOpen: true }, '', '#lightbox');
 }
@@ -560,7 +646,7 @@ gridWrap.addEventListener('touchstart', (e) => {
       
       if (navigator.vibrate) navigator.vibrate(40);
       updateHeaderState();
-    }, 350);
+    }, 300);
   }
 }, {passive: true});
 
@@ -600,22 +686,64 @@ gridWrap.addEventListener('click', (e) => {
   }
 });
 
-let scale = 1, pointX = 0, pointY = 0, startTouchX = 0, startTouchY = 0, lastDist = 0, isPanning = false;
+/* SMOOTH ZOOM & PANNING WITH BOUNDARIES */
+let scale = 1, pointX = 0, pointY = 0;
+let startTouchX = 0, startTouchY = 0, lastDist = 0;
+let isPanning = false;
+let lastTapTime = 0;
 
-function updateTransform() {
-  lightboxImg.style.transform = `translate(${pointX}px, ${pointY}px) scale(${scale})`;
+function clampBoundaries() {
+  const containerRect = imgContainer.getBoundingClientRect();
+  if (scale <= 1) {
+    pointX = 0;
+    pointY = 0;
+    return;
+  }
+  const renderedWidth = lightboxImg.offsetWidth * scale;
+  const renderedHeight = lightboxImg.offsetHeight * scale;
+  const maxTransX = Math.max(0, (renderedWidth - containerRect.width) / 2);
+  const maxTransY = Math.max(0, (renderedHeight - containerRect.height) / 2);
+
+  pointX = Math.min(Math.max(pointX, -maxTransX), maxTransX);
+  pointY = Math.min(Math.max(pointY, -maxTransY), maxTransY);
+}
+
+function updateTransform(smooth = false) {
+  clampBoundaries();
+  if (smooth) {
+    lightboxImg.style.transition = 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)';
+  } else {
+    lightboxImg.style.transition = 'none';
+  }
+  lightboxImg.style.transform = `translate3d(${pointX}px, ${pointY}px, 0px) scale(${scale})`;
 }
 
 function resetZoom() {
   scale = 1; pointX = 0; pointY = 0;
-  updateTransform();
+  updateTransform(true);
 }
 
 imgContainer.addEventListener('touchstart', (e) => {
   if (e.touches.length === 1) {
-    startTouchX = e.touches[0].clientX - pointX;
-    startTouchY = e.touches[0].clientY - pointY;
-    isPanning = true;
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+    if (tapLength < 300 && tapLength > 0) {
+      if (scale > 1) {
+        resetZoom();
+      } else {
+        scale = 2.5;
+        updateTransform(true);
+      }
+      e.preventDefault();
+      return;
+    }
+    lastTapTime = currentTime;
+
+    if (scale > 1) {
+      isPanning = true;
+      startTouchX = e.touches[0].clientX - pointX;
+      startTouchY = e.touches[0].clientY - pointY;
+    }
   } else if (e.touches.length === 2) {
     isPanning = false;
     lastDist = Math.hypot(
@@ -629,7 +757,7 @@ imgContainer.addEventListener('touchmove', (e) => {
   if (isPanning && e.touches.length === 1 && scale > 1) {
     pointX = e.touches[0].clientX - startTouchX;
     pointY = e.touches[0].clientY - startTouchY;
-    updateTransform();
+    updateTransform(false);
   } else if (e.touches.length === 2) {
     let dist = Math.hypot(
       e.touches[0].clientX - e.touches[1].clientX,
@@ -638,11 +766,20 @@ imgContainer.addEventListener('touchmove', (e) => {
     let factor = dist / lastDist;
     scale = Math.min(Math.max(scale * factor, 1), 4);
     lastDist = dist;
-    updateTransform();
+    updateTransform(false);
   }
 });
 
-imgContainer.addEventListener('touchend', () => { isPanning = false; });
+imgContainer.addEventListener('touchend', (e) => {
+  if (e.touches.length === 0) {
+    isPanning = false;
+    if (scale < 1) {
+      resetZoom();
+    } else {
+      updateTransform(true);
+    }
+  }
+});
 
 lbDownload.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -667,12 +804,9 @@ function makeTempCell(id) {
 function uploadOne(file, id, timeFormatted, tempCell) {
   return new Promise(async (resolve) => {
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        await photosRef.child(id).set({ url: e.target.result, order: timeFormatted });
-        resolve(true);
-      };
-      reader.readAsDataURL(file);
+      const compressedDataUrl = await compressImage(file);
+      await photosRef.child(id).set({ url: compressedDataUrl, order: timeFormatted });
+      resolve(true);
     } catch (err) { resolve(false); }
   });
 }
@@ -700,6 +834,15 @@ delBtn.addEventListener('click', () => {
 
 cancelDel.addEventListener('click', () => confirmOverlay.style.display = 'none');
 
+cancelSelBtn.addEventListener('click', () => {
+  selected.forEach(id => {
+    const cell = grid.querySelector(`.cell[data-id="${id}"]`);
+    if (cell) cell.classList.remove('selected');
+  });
+  selected.clear();
+  updateHeaderState();
+});
+
 okDel.addEventListener('click', async () => {
   confirmOverlay.style.display = 'none';
   const ids = Array.from(selected);
@@ -710,19 +853,37 @@ okDel.addEventListener('click', async () => {
   updateHeaderState();
 });
 
-// App Initializing
-emptyEl.style.display = 'flex';
-initSpinner.style.display = 'flex';
+/* App Initializing Strategy */
+const hasCache = loadCachedPhotos();
 
-animateProgress(progressBarFill, progressText, () => {
-  photosRef.on('value', (snap) => {
-    photos = snap.val() || {};
-    for (const id of Array.from(selected)) {
-      if (!photos[id]) selected.delete(id);
-    }
-    updateHeaderState();
+if (hasCache) {
+  // Cache hai — instant render karo, no spinner
+  emptyEl.style.display = 'none';
+  render();
+} else {
+  // Pehli baar — spinner dikhaao
+  emptyEl.style.display = 'flex';
+  initSpinner.style.display = 'flex';
+  animateProgress(progressBarFill, progressText, () => {});
+}
+
+// Ek hi real-time listener — saari photos, koi limit nahi
+photosRef.on('value', (snap) => {
+  photos = snap.val() || {};
+  saveCachedPhotos(photos);
+  for (const id of Array.from(selected)) {
+    if (!photos[id]) selected.delete(id);
+  }
+  updateHeaderState();
+  if (Object.keys(photos).length === 0) {
+    emptyEl.style.display = 'flex';
+    initSpinner.style.display = 'none';
+    emptyText.style.display = 'flex';
+    grid.innerHTML = '';
+  } else {
+    emptyEl.style.display = 'none';
     render();
-  });
+  }
 });
 </script>
 </body>
