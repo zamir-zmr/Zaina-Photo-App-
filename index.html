@@ -443,42 +443,76 @@ let longPressTimer = null;
 let startY = 0;
 let currentLightboxUrl = '';
 
-/* Local Storage — sirf keys + order cache karo, base64 nahi */
-const CACHE_KEY = 'zaina_photos_meta_v2';
+/* IndexedDB Cache — 500MB+, localStorage se 100x bada */
+const IDB_NAME = 'ZainaGallery';
+const IDB_STORE = 'photos';
+const IDB_VERSION = 1;
+let idb = null;
 
-function loadCachedPhotos() {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      // meta only: {id: {url, order}} — url is base64, still needed for display
-      // but we keep it because photos ARE base64 (stored in Firebase Realtime DB)
-      const parsed = JSON.parse(cached);
-      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-        photos = parsed;
-        return true;
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    if (idb) { resolve(idb); return; }
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: 'id' });
       }
-    }
-  } catch (e) {
-    // Cache corrupt — clear it
-    try { localStorage.removeItem(CACHE_KEY); } catch(_) {}
-  }
-  return false;
+    };
+    req.onsuccess = (e) => { idb = e.target.result; resolve(idb); };
+    req.onerror = () => reject(req.error);
+  });
 }
 
-function saveCachedPhotos(data) {
+async function loadCachedPhotos() {
   try {
-    // Save full data — but catch quota errors gracefully
-    const str = JSON.stringify(data);
-    localStorage.setItem(CACHE_KEY, str);
-  } catch (e) {
-    // LocalStorage full — clear old cache and try again with just keys+order (no url)
-    try {
-      localStorage.removeItem(CACHE_KEY);
-      const metaOnly = {};
-      Object.entries(data).forEach(([id, p]) => { metaOnly[id] = { order: p.order, url: '' }; });
-      localStorage.setItem(CACHE_KEY, JSON.stringify(metaOnly));
-    } catch(_) {}
-  }
+    const db = await openIDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const store = tx.objectStore(IDB_STORE);
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const rows = req.result;
+        if (rows && rows.length > 0) {
+          photos = {};
+          rows.forEach(r => { photos[r.id] = { url: r.url, order: r.order }; });
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      };
+      req.onerror = () => resolve(false);
+    });
+  } catch(e) { return false; }
+}
+
+async function saveCachedPhotos(data) {
+  try {
+    const db = await openIDB();
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    const store = tx.objectStore(IDB_STORE);
+    // Clear old, write new
+    store.clear();
+    Object.entries(data).forEach(([id, p]) => {
+      store.put({ id, url: p.url, order: p.order });
+    });
+  } catch(e) { console.warn('IDB save error', e); }
+}
+
+async function removeFromCache(id) {
+  try {
+    const db = await openIDB();
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).delete(id);
+  } catch(e) {}
+}
+
+async function addToCache(id, p) {
+  try {
+    const db = await openIDB();
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put({ id, url: p.url, order: p.order });
+  } catch(e) {}
 }
 
 function animateProgress(fillEl, textEl, callback) {
@@ -521,48 +555,40 @@ function updateHeaderState() {
   }
 }
 
-/* IntersectionObserver for lazy image loading */
-let imgObserver = null;
-function getImgObserver() {
-  if (!imgObserver) {
-    imgObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          const src = img.dataset.src;
-          if (src) { img.src = src; img.removeAttribute('data-src'); }
-          imgObserver.unobserve(img);
-        }
-      });
-    }, { rootMargin: '200px' });
-  }
-  return imgObserver;
-}
+/* IntersectionObserver: load image only when near viewport */
+const imgObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const img = entry.target;
+      const src = img.dataset.src;
+      if (src) { img.src = src; img.removeAttribute('data-src'); }
+      imgObserver.unobserve(img);
+    }
+  });
+}, { rootMargin: '300px' });
+
+const CHECKMARK_SVG = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
 
 function makeCell(id, p) {
   const cell = document.createElement('div');
   cell.className = 'cell' + (selected.has(id) ? ' selected' : '');
   cell.dataset.id = id;
-
   const img = document.createElement('img');
-  // Use data-src for lazy loading — only load when near viewport
   img.dataset.src = p.url;
   img.src = '';
-  img.loading = 'lazy';
   cell.appendChild(img);
-  getImgObserver().observe(img);
-
+  imgObserver.observe(img);
   const check = document.createElement('div');
   check.className = 'checkmark';
-  check.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+  check.innerHTML = CHECKMARK_SVG;
   cell.appendChild(check);
   return cell;
 }
 
 function render() {
-  const list = Object.entries(photos).sort((a,b) => {
-    return new Date(b[1].order).getTime() - new Date(a[1].order).getTime();
-  });
+  const list = Object.entries(photos).sort((a,b) =>
+    new Date(b[1].order).getTime() - new Date(a[1].order).getTime()
+  );
 
   if (list.length === 0) {
     emptyEl.style.display = 'flex';
@@ -570,15 +596,14 @@ function render() {
     emptyText.style.display = 'flex';
     grid.innerHTML = '';
     return;
-  } else {
-    emptyEl.style.display = 'none';
   }
+  emptyEl.style.display = 'none';
+  initSpinner.style.display = 'none';
 
-  // Diff-based render — sirf naye cells add karo, purane hato
+  // Diff: only add new, remove deleted
   const existingIds = new Set([...grid.querySelectorAll('.cell[data-id]')].map(c => c.dataset.id));
   const newIds = new Set(list.map(([id]) => id));
 
-  // Remove deleted
   existingIds.forEach(id => {
     if (!newIds.has(id)) {
       const el = grid.querySelector(`.cell[data-id="${id}"]`);
@@ -586,20 +611,13 @@ function render() {
     }
   });
 
-  // Add new, in order
-  const fragment = document.createDocumentFragment();
-  const ordered = [];
-  for (const [id, p] of list) {
-    if (!existingIds.has(id)) {
-      ordered.push(makeCell(id, p));
-    }
-  }
-  if (ordered.length > 0) {
-    ordered.forEach(c => fragment.appendChild(c));
-    grid.prepend(fragment);
-  }
+  const frag = document.createDocumentFragment();
+  list.forEach(([id, p]) => {
+    if (!existingIds.has(id)) frag.appendChild(makeCell(id, p));
+  });
+  if (frag.childNodes.length > 0) grid.prepend(frag);
 
-  // Re-sort DOM to match list order (efficient: only if needed)
+  // Re-order DOM to match sorted list
   list.forEach(([id], i) => {
     const el = grid.querySelector(`.cell[data-id="${id}"]`);
     if (el && grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);
@@ -612,26 +630,21 @@ function compressImage(file) {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        function resize(source, maxPx) {
-          let w = source.width || source.naturalWidth, h = source.height || source.naturalHeight;
+        function resizeTo(src, maxPx) {
+          let w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
           if (w > h) { if (w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; } }
           else { if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; } }
           const c = document.createElement('canvas');
           c.width = w; c.height = h;
-          c.getContext('2d').drawImage(source, 0, 0, w, h);
+          c.getContext('2d').drawImage(src, 0, 0, w, h);
           return c;
         }
-        // 800px, quality 0.6
-        let canvas = resize(img, 800);
-        let dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-        // >150KB → lower quality
-        if (dataUrl.length > 150 * 1024) dataUrl = canvas.toDataURL('image/jpeg', 0.4);
-        // Still >100KB → shrink to 600px
-        if (dataUrl.length > 100 * 1024) {
-          canvas = resize(img, 600);
-          dataUrl = canvas.toDataURL('image/jpeg', 0.45);
-        }
-        resolve(dataUrl);
+        let c = resizeTo(img, 800);
+        let out = c.toDataURL('image/jpeg', 0.65);
+        if (out.length > 130 * 1024) out = c.toDataURL('image/jpeg', 0.45);
+        if (out.length > 100 * 1024) { c = resizeTo(img, 600); out = c.toDataURL('image/jpeg', 0.5); }
+        if (out.length > 80 * 1024)  { c = resizeTo(img, 480); out = c.toDataURL('image/jpeg', 0.45); }
+        resolve(out);
       };
       img.src = e.target.result;
     };
@@ -875,7 +888,11 @@ function uploadOne(file, id, timeFormatted, tempCell) {
   return new Promise(async (resolve) => {
     try {
       const compressedDataUrl = await compressImage(file);
-      await photosRef.child(id).set({ url: compressedDataUrl, order: timeFormatted });
+      const photoData = { url: compressedDataUrl, order: timeFormatted };
+      await photosRef.child(id).set(photoData);
+      // Immediately cache — child_added will also fire but no harm
+      photos[id] = photoData;
+      await addToCache(id, photoData);
       resolve(true);
     } catch (err) { resolve(false); }
   });
@@ -917,58 +934,74 @@ okDel.addEventListener('click', async () => {
   confirmOverlay.style.display = 'none';
   const ids = Array.from(selected);
   for (const id of ids) {
-    try { await photosRef.child(id).remove(); } catch (err) {}
+    try {
+      await photosRef.child(id).remove();
+      delete photos[id];
+      await removeFromCache(id);
+      const el = grid.querySelector(`.cell[data-id="${id}"]`);
+      if (el) el.remove();
+    } catch (err) {}
     selected.delete(id);
-  }
-  updateHeaderState();
-});
-
-/* App Initializing Strategy */
-const hasCache = loadCachedPhotos();
-
-function applyPhotos(data) {
-  photos = data;
-  saveCachedPhotos(photos);
-  for (const id of Array.from(selected)) {
-    if (!photos[id]) selected.delete(id);
   }
   updateHeaderState();
   if (Object.keys(photos).length === 0) {
     emptyEl.style.display = 'flex';
     initSpinner.style.display = 'none';
     emptyText.style.display = 'flex';
-    grid.innerHTML = '';
-  } else {
-    emptyEl.style.display = 'none';
-    initSpinner.style.display = 'none';
-    render();
   }
-}
+});
 
-if (hasCache) {
-  // Cache hai — instant render, no spinner
-  emptyEl.style.display = 'none';
-  render();
-  // Background sync once — diff apply karega render()
-  photosRef.once('value', (snap) => {
-    applyPhotos(snap.val() || {});
-    // Phir real-time changes ke liye listen
-    photosRef.on('child_added', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
-    photosRef.on('child_removed', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
+/* App Init — IndexedDB async */
+(async () => {
+  const hasCache = await loadCachedPhotos();
+
+  if (hasCache && Object.keys(photos).length > 0) {
+    emptyEl.style.display = 'none';
+    render();
+  } else {
+    emptyEl.style.display = 'flex';
+    initSpinner.style.display = 'flex';
+    animateProgress(progressBarFill, progressText, () => {});
+  }
+
+  // Pehle once() — saara data ek baar lo
+  photosRef.once('value', async (snap) => {
+    const data = snap.val() || {};
+    photos = data;
+    await saveCachedPhotos(photos);
+    for (const id of Array.from(selected)) {
+      if (!photos[id]) selected.delete(id);
+    }
+    updateHeaderState();
+    if (Object.keys(photos).length === 0) {
+      emptyEl.style.display = 'flex';
+      initSpinner.style.display = 'none';
+      emptyText.style.display = 'flex';
+      grid.innerHTML = '';
+    } else {
+      render();
+    }
+
+    // Phir sirf changes sun — child_added & child_removed
+    photosRef.on('child_added', async (snap) => {
+      const id = snap.key;
+      if (photos[id]) return; // already have it
+      photos[id] = snap.val();
+      await addToCache(id, photos[id]);
+      render();
+    });
+
+    photosRef.on('child_removed', async (snap) => {
+      const id = snap.key;
+      delete photos[id];
+      await removeFromCache(id);
+      selected.delete(id);
+      const el = grid.querySelector(`.cell[data-id="${id}"]`);
+      if (el) el.remove();
+      updateHeaderState();
+    });
   });
-} else {
-  // Pehli baar — spinner dikhaao
-  emptyEl.style.display = 'flex';
-  initSpinner.style.display = 'flex';
-  animateProgress(progressBarFill, progressText, () => {});
-  // Load all photos once
-  photosRef.once('value', (snap) => {
-    applyPhotos(snap.val() || {});
-    // Real-time changes
-    photosRef.on('child_added', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
-    photosRef.on('child_removed', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
-  });
-}
+})();
 </script>
 </body>
 </html>
