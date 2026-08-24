@@ -406,7 +406,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const photosRef = db.ref('zaina_photos');
+const photosRef = db.ref('zaina_photos2');
 
 const grid = document.getElementById('grid');
 const gridWrap = document.getElementById('gridWrap');
@@ -443,27 +443,41 @@ let longPressTimer = null;
 let startY = 0;
 let currentLightboxUrl = '';
 
-/* Local Storage Caching Strategy */
-const CACHE_KEY = 'zaina_photos_cache';
+/* Local Storage — sirf keys + order cache karo, base64 nahi */
+const CACHE_KEY = 'zaina_photos_meta_v2';
 
 function loadCachedPhotos() {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     if (cached) {
-      photos = JSON.parse(cached);
-      return true;
+      // meta only: {id: {url, order}} — url is base64, still needed for display
+      // but we keep it because photos ARE base64 (stored in Firebase Realtime DB)
+      const parsed = JSON.parse(cached);
+      if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+        photos = parsed;
+        return true;
+      }
     }
   } catch (e) {
-    console.warn('LocalStorage error:', e);
+    // Cache corrupt — clear it
+    try { localStorage.removeItem(CACHE_KEY); } catch(_) {}
   }
   return false;
 }
 
 function saveCachedPhotos(data) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    // Save full data — but catch quota errors gracefully
+    const str = JSON.stringify(data);
+    localStorage.setItem(CACHE_KEY, str);
   } catch (e) {
-    console.warn('LocalStorage full or disabled:', e);
+    // LocalStorage full — clear old cache and try again with just keys+order (no url)
+    try {
+      localStorage.removeItem(CACHE_KEY);
+      const metaOnly = {};
+      Object.entries(data).forEach(([id, p]) => { metaOnly[id] = { order: p.order, url: '' }; });
+      localStorage.setItem(CACHE_KEY, JSON.stringify(metaOnly));
+    } catch(_) {}
   }
 }
 
@@ -507,11 +521,49 @@ function updateHeaderState() {
   }
 }
 
+/* IntersectionObserver for lazy image loading */
+let imgObserver = null;
+function getImgObserver() {
+  if (!imgObserver) {
+    imgObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          const src = img.dataset.src;
+          if (src) { img.src = src; img.removeAttribute('data-src'); }
+          imgObserver.unobserve(img);
+        }
+      });
+    }, { rootMargin: '200px' });
+  }
+  return imgObserver;
+}
+
+function makeCell(id, p) {
+  const cell = document.createElement('div');
+  cell.className = 'cell' + (selected.has(id) ? ' selected' : '');
+  cell.dataset.id = id;
+
+  const img = document.createElement('img');
+  // Use data-src for lazy loading — only load when near viewport
+  img.dataset.src = p.url;
+  img.src = '';
+  img.loading = 'lazy';
+  cell.appendChild(img);
+  getImgObserver().observe(img);
+
+  const check = document.createElement('div');
+  check.className = 'checkmark';
+  check.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+  cell.appendChild(check);
+  return cell;
+}
+
 function render() {
   const list = Object.entries(photos).sort((a,b) => {
     return new Date(b[1].order).getTime() - new Date(a[1].order).getTime();
   });
-  
+
   if (list.length === 0) {
     emptyEl.style.display = 'flex';
     initSpinner.style.display = 'none';
@@ -522,46 +574,64 @@ function render() {
     emptyEl.style.display = 'none';
   }
 
+  // Diff-based render — sirf naye cells add karo, purane hato
+  const existingIds = new Set([...grid.querySelectorAll('.cell[data-id]')].map(c => c.dataset.id));
+  const newIds = new Set(list.map(([id]) => id));
+
+  // Remove deleted
+  existingIds.forEach(id => {
+    if (!newIds.has(id)) {
+      const el = grid.querySelector(`.cell[data-id="${id}"]`);
+      if (el) el.remove();
+    }
+  });
+
+  // Add new, in order
   const fragment = document.createDocumentFragment();
-
+  const ordered = [];
   for (const [id, p] of list) {
-    const cell = document.createElement('div');
-    cell.className = 'cell' + (selected.has(id) ? ' selected' : '');
-    cell.dataset.id = id;
-
-    const img = document.createElement('img');
-    img.src = p.url;
-    img.loading = 'lazy';
-    cell.appendChild(img);
-
-    const check = document.createElement('div');
-    check.className = 'checkmark';
-    check.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
-    cell.appendChild(check);
-
-    fragment.appendChild(cell);
+    if (!existingIds.has(id)) {
+      ordered.push(makeCell(id, p));
+    }
+  }
+  if (ordered.length > 0) {
+    ordered.forEach(c => fragment.appendChild(c));
+    grid.prepend(fragment);
   }
 
-  grid.innerHTML = '';
-  grid.appendChild(fragment);
+  // Re-sort DOM to match list order (efficient: only if needed)
+  list.forEach(([id], i) => {
+    const el = grid.querySelector(`.cell[data-id="${id}"]`);
+    if (el && grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);
+  });
 }
 
-function compressImage(file, maxDimension = 1200, quality = 0.75) {
+function compressImage(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > maxDimension || h > maxDimension) {
-          if (w > h) { h = Math.round((h * maxDimension) / w); w = maxDimension; }
-          else { w = Math.round((w * maxDimension) / h); h = maxDimension; }
+        function resize(source, maxPx) {
+          let w = source.width || source.naturalWidth, h = source.height || source.naturalHeight;
+          if (w > h) { if (w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; } }
+          else { if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; } }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(source, 0, 0, w, h);
+          return c;
         }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        // 800px, quality 0.6
+        let canvas = resize(img, 800);
+        let dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        // >150KB → lower quality
+        if (dataUrl.length > 150 * 1024) dataUrl = canvas.toDataURL('image/jpeg', 0.4);
+        // Still >100KB → shrink to 600px
+        if (dataUrl.length > 100 * 1024) {
+          canvas = resize(img, 600);
+          dataUrl = canvas.toDataURL('image/jpeg', 0.45);
+        }
+        resolve(dataUrl);
       };
       img.src = e.target.result;
     };
@@ -856,20 +926,8 @@ okDel.addEventListener('click', async () => {
 /* App Initializing Strategy */
 const hasCache = loadCachedPhotos();
 
-if (hasCache) {
-  // Cache hai — instant render karo, no spinner
-  emptyEl.style.display = 'none';
-  render();
-} else {
-  // Pehli baar — spinner dikhaao
-  emptyEl.style.display = 'flex';
-  initSpinner.style.display = 'flex';
-  animateProgress(progressBarFill, progressText, () => {});
-}
-
-// Ek hi real-time listener — saari photos, koi limit nahi
-photosRef.on('value', (snap) => {
-  photos = snap.val() || {};
+function applyPhotos(data) {
+  photos = data;
   saveCachedPhotos(photos);
   for (const id of Array.from(selected)) {
     if (!photos[id]) selected.delete(id);
@@ -882,9 +940,35 @@ photosRef.on('value', (snap) => {
     grid.innerHTML = '';
   } else {
     emptyEl.style.display = 'none';
+    initSpinner.style.display = 'none';
     render();
   }
-});
+}
+
+if (hasCache) {
+  // Cache hai — instant render, no spinner
+  emptyEl.style.display = 'none';
+  render();
+  // Background sync once — diff apply karega render()
+  photosRef.once('value', (snap) => {
+    applyPhotos(snap.val() || {});
+    // Phir real-time changes ke liye listen
+    photosRef.on('child_added', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
+    photosRef.on('child_removed', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
+  });
+} else {
+  // Pehli baar — spinner dikhaao
+  emptyEl.style.display = 'flex';
+  initSpinner.style.display = 'flex';
+  animateProgress(progressBarFill, progressText, () => {});
+  // Load all photos once
+  photosRef.once('value', (snap) => {
+    applyPhotos(snap.val() || {});
+    // Real-time changes
+    photosRef.on('child_added', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
+    photosRef.on('child_removed', () => photosRef.once('value', s => applyPhotos(s.val() || {})));
+  });
+}
 </script>
 </body>
 </html>
