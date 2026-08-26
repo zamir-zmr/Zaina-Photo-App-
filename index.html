@@ -471,16 +471,43 @@
     align-items:center; justify-content:center; z-index:100; overflow:hidden;
     animation: fadeIn 0.25s ease-out;
   }
+  
+
+
   #lightboxHeader {
-    position:absolute; top:0; left:0; right:0; height:64px;
-    display:flex; align-items:center; justify-content:space-between; padding:0 16px; z-index:101;
-  }
-  #lbClose, #lbDownload {
-    background:rgba(255, 182, 193, 0.15); color:#ffb6c1; border: 1px solid rgba(255, 182, 193, 0.3);
-    padding:8px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer;
-    display:flex; align-items:center; gap:6px; backdrop-filter: blur(8px);
-  }
-  #imgContainer {
+    position: absolute; 
+    top: 0px; 
+    left: 0; 
+    right: 0; 
+    height: auto; /* Height auto taaki content ke hisaab se adjust ho */
+    display: flex; 
+    align-items: flex-start; 
+    justify-content: space-between; 
+    padding: 0 16px; /* Upar ka padding bilkul 0 kar diya */
+    z-index: 101;
+    margin: 0;
+}
+
+#lbClose, #lbDownload {
+    background: rgba(255, 182, 193, 0.15); 
+    color: #ffb6c1; 
+    border: 1px solid rgba(255, 182, 193, 0.3);
+    padding: 6px 14px; 
+    border-radius: 20px; 
+    font-size: 13px; 
+    font-weight: 600; 
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    gap: 6px; 
+    backdrop-filter: blur(8px);
+    margin: 0 !important;
+}
+
+
+
+  
+    #imgContainer {
     width:100%; height:100%; display:flex; align-items:center; justify-content:center;
     overflow:hidden; touch-action:none; position:relative;
   }
@@ -498,12 +525,21 @@
   #lightboxImg { display:none; }
   #lbLoading { position:absolute; width:100%; display:flex; justify-content:center; }
 
-  #lbCounter {
-    position:absolute; top:72px; left:50%; transform:translateX(-50%);
-    color:#ffb6c1; font-size:12px; font-weight:600; letter-spacing:0.5px;
-    background: rgba(255, 182, 193, 0.12); border: 1px solid rgba(255, 182, 193, 0.25);
-    padding:5px 14px; border-radius:20px; backdrop-filter: blur(8px); z-index:101;
-  }
+#lbCounter {
+  position: relative; /* ya static taaki ye flow ke sath aaye */
+  display: inline-block;
+  margin-top: 0px; /* Haider ke bilkul sath chhota sa gap agar chahiye ho */
+  color: #ffb6c1; 
+  font-size: 12px; 
+  font-weight: 600; 
+  letter-spacing: 0.5px;
+  background: rgba(255, 182, 193, 0.12); 
+  border: 1px solid rgba(255, 182, 193, 0.25);
+  padding: 5px 14px; 
+  border-radius: 20px; 
+  backdrop-filter: blur(8px); 
+  z-index: 101;
+}
 
   .lb-nav-btn {
     position:absolute; top:50%; transform:translateY(-50%); z-index:101;
@@ -821,7 +857,7 @@
     <button id="lbClose">✕ Close</button>
     <button id="lbDownload">
       <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="2" width="15" height="15"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-      Save Photo
+      Download
     </button>
   </div>
   <div id="lbCounter">1 / 1</div>
