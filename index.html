@@ -276,12 +276,18 @@
     width:100%; height:100%; display:flex; align-items:center; justify-content:center;
     overflow:hidden; touch-action:none; position:relative;
   }
-  #lightboxImg {
-    max-width:94%; max-height:86vh; border-radius:16px; object-fit:contain;
+  .lb-slide-img {
+    position:absolute; top:calc(50% - 45px); left:50%;
+    max-width:94%; max-height:75vh; border-radius:16px; object-fit:contain;
     box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 30px rgba(255, 117, 140, 0.2);
-    transform-origin: center center; display:none;
+    transform-origin: center center;
     will-change: transform;
+    backface-visibility: hidden;
   }
+  #lbImgPrev, #lbImgNext {
+    pointer-events:none; visibility:hidden;
+  }
+  #lightboxImg { display:none; }
   #lbLoading { position:absolute; width:100%; display:flex; justify-content:center; }
 
   #lbCounter {
@@ -293,14 +299,14 @@
 
   .lb-nav-btn {
     position:absolute; top:50%; transform:translateY(-50%); z-index:101;
-    width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
-    background: rgba(20, 12, 28, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 182, 193, 0.3);
+    width:70px; height:600px; border-radius:0%; border:none; cursor:pointer;
+    background: transparent; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(8px);
+    border: 1px transparent; 
     display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 15px transparent; 
     transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
   }
-  .lb-nav-btn:active { transform: translateY(-50%) scale(0.88); background: rgba(255, 117, 140, 0.35); }
+  .lb-nav-btn:active { transform: translateY(-50%) scale(0.88); background:transparent;}
   .lb-nav-btn svg { width:20px; height:20px; }
   #lbPrev { left:12px; }
   #lbNext { right:12px; }
@@ -321,6 +327,99 @@
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
   #fileInput { display:none; }
+
+  /* Thumbnail Carousel Strip */
+  #lbThumbnailStrip {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 90px;
+    background: linear-gradient(to top, rgba(10, 5, 12, 0.97) 60%, rgba(10, 5, 12, 0.0));
+    display: flex; align-items: center; justify-content: flex-start;
+    z-index: 102;
+    padding: 0 0 10px 0;
+    pointer-events: auto;
+    overflow: hidden;
+  }
+
+  #lbThumbTrack {
+    display: flex; align-items: center; justify-content: flex-start;
+    gap: 6px;
+    transition: none;
+    will-change: transform;
+    transform: translateX(0);
+    padding-left: 6px;
+  }
+
+
+  .lb-thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+
+  transition:
+    transform 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 0.25s ease,
+    opacity 0.25s ease,
+    width 0.25s cubic-bezier(0.25, 1, 0.5, 1),
+    height 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+
+  /* ALL THUMBNAILS FULL CLEAR */
+  opacity: 1;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+.lb-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+
+  /* IMAGE FULL CLEAR */
+  opacity: 1;
+  filter: none;
+}
+
+.lb-thumb.active {
+  width: 68px;
+  height: 68px;
+
+  /* ACTIVE PHOTO BORDER */
+  border-color: #ff758c;
+
+  /* ACTIVE ALSO FULL CLEAR */
+  opacity: 1;
+
+  box-shadow:
+    0 0 16px rgba(255, 117, 140, 0.7),
+    0 4px 12px rgba(0,0,0,0.6);
+
+  transform: scale(1);
+}
+
+/* NON-ACTIVE THUMBNAILS ALSO STAY CLEAR */
+.lb-thumb:not(.active) {
+  opacity: 1;
+  filter: none;
+}
+
+/* HOVER */
+.lb-thumb:not(.active):hover {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+  @media (max-width: 400px) {
+    #lbThumbnailStrip { height: 80px; }
+    .lb-thumb { width: 48px; height: 48px; }
+    .lb-thumb.active { width: 60px; height: 60px; }
+  }
 </style>
 </head>
 <body>
@@ -416,13 +515,19 @@
         </div>
       </div>
     </div>
-    <img id="lightboxImg" src="" alt="Preview">
+    <img id="lbImgPrev" class="lb-slide-img" src="" alt="">
+    <img id="lightboxImg" class="lb-slide-img" src="" alt="Preview">
+    <img id="lbImgNext" class="lb-slide-img" src="" alt="">
     <button id="lbPrev" class="lb-nav-btn" aria-label="Previous">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <button id="lbNext" class="lb-nav-btn" aria-label="Next">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffb6c1" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
     </button>
+  </div>
+  <!-- Thumbnail Carousel Strip -->
+  <div id="lbThumbnailStrip">
+    <div id="lbThumbTrack"></div>
   </div>
 </div>
 
@@ -459,6 +564,9 @@ const okDel = document.getElementById('okDel');
 const cancelSelBtn = document.getElementById('cancelSelBtn');
 const lightboxOverlay = document.getElementById('lightboxOverlay');
 const lightboxImg = document.getElementById('lightboxImg');
+const lbImgPrev = document.getElementById('lbImgPrev');
+const lbImgNext = document.getElementById('lbImgNext');
+let containerWidth = 0;
 const lbLoading = document.getElementById('lbLoading');
 const imgContainer = document.getElementById('imgContainer');
 const lbClose = document.getElementById('lbClose');
@@ -466,6 +574,7 @@ const lbDownload = document.getElementById('lbDownload');
 const lbPrev = document.getElementById('lbPrev');
 const lbNext = document.getElementById('lbNext');
 const lbCounter = document.getElementById('lbCounter');
+const lbThumbTrack = document.getElementById('lbThumbTrack');
 
 const progressText = document.getElementById('progressText');
 const progressBarFill = document.getElementById('progressBarFill');
@@ -708,60 +817,243 @@ function updateNavButtons() {
   lbCounter.textContent = currentPhotoList.length ? (currentIndex + 1) + ' / ' + currentPhotoList.length : '';
 }
 
-function loadLightboxPhoto(index, direction, instant) {
+/* ---- Thumbnail Strip ---- */
+/*
+ * LOCKED ACTIVE THUMBNAIL BEHAVIOR
+ * --------------------------------
+ * The currently displayed photo is ALWAYS represented by the first
+ * visible thumbnail in the strip. Its border stays visible.
+ *
+ * We do not move the active thumbnail to the middle anymore. Instead,
+ * syncThumbnails() rebuilds the visible window so currentIndex becomes
+ * position 0, while the remaining thumbnails follow it.
+ */
+const THUMB_VISIBLE = 5; // active + following thumbnails
+
+function buildThumbnailStrip() {
+  lbThumbTrack.innerHTML = '';
+
+  currentPhotoList.forEach((photo, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'lb-thumb';
+    thumb.dataset.idx = i;
+
+    const img = document.createElement('img');
+    img.src = photo.url;
+    img.alt = '';
+    img.draggable = false;
+
+    thumb.appendChild(img);
+
+    thumb.addEventListener('click', (e) => {
+      e.stopPropagation();
+
+      const idx = parseInt(thumb.dataset.idx, 10);
+      if (!Number.isFinite(idx) || idx === currentIndex) return;
+
+      // Grid/thumbnail selection becomes the new active photo immediately.
+      currentIndex = idx;
+
+      const p = currentPhotoList[currentIndex];
+      if (!p) return;
+
+      currentLightboxUrl = p.url;
+      scale = 1;
+      pointX = 0;
+      pointY = 0;
+
+      lightboxImg.style.display = 'block';
+      lightboxImg.src = p.url;
+
+      updateAdjacentImages();
+      setTrackTransition(false);
+      positionTrack(0);
+      updateNavButtons();
+
+      // IMPORTANT: move the selected thumbnail to the far-left position
+      // immediately and keep its active border.
+      syncThumbnails(true);
+    });
+
+    lbThumbTrack.appendChild(thumb);
+  });
+
+  // Initial lightbox open: selected photo is also locked to far-left.
+  syncThumbnails(true);
+}
+
+function syncThumbnails(animate = true) {
+  const total = currentPhotoList.length;
+  const thumbs = Array.from(lbThumbTrack.querySelectorAll('.lb-thumb'));
+
+  if (!total || !thumbs.length || currentIndex < 0) {
+    lbThumbTrack.style.transition = 'none';
+    lbThumbTrack.style.transform = 'translateX(0)';
+    return;
+  }
+
+  /*
+   * The thumbnail DOM order stays stable, but the visible window is
+   * rebuilt around currentIndex by translating the track.
+   *
+   * Because the active thumbnail is 68px while normal thumbnails are
+   * 56px, calculate the exact distance using the actual element widths.
+   * This prevents the active item from being slightly off the left edge.
+   */
+  thumbs.forEach((t, i) => {
+    t.classList.toggle('active', i === currentIndex);
+  });
+
+  // Put the current thumbnail at the far-left edge.
+  // Measure the width of every item before currentIndex so the offset
+  // remains correct even when the active thumbnail has a different size.
+  let offset = 0;
+  for (let i = 0; i < currentIndex; i++) {
+    const rect = thumbs[i].getBoundingClientRect();
+    offset += rect.width + 6; // thumbnail width + gap
+  }
+
+  /*
+   * When moving backward, the active thumbnail must also become the
+   * first visible item. translateX() therefore uses the complete
+   * accumulated width of all thumbnails before currentIndex.
+   */
+  lbThumbTrack.style.transition = animate
+    ? 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)'
+    : 'none';
+  lbThumbTrack.style.transform = `translateX(${-offset}px)`;
+
+  /*
+   * Keep the active thumbnail visually pinned at the far-left position.
+   * The extra timeout handles the active thumbnail's width transition.
+   */
+  if (animate) {
+    setTimeout(() => {
+      if (currentIndex < 0) return;
+
+      const currentThumb = lbThumbTrack.querySelector(
+        `.lb-thumb[data-idx="${currentIndex}"]`
+      );
+
+      if (!currentThumb) return;
+
+      let exactOffset = 0;
+      thumbs.forEach((t, i) => {
+        if (i < currentIndex) {
+          exactOffset += t.offsetWidth + 6;
+        }
+      });
+
+      lbThumbTrack.style.transform = `translateX(${-exactOffset}px)`;
+    }, 260);
+  }
+}
+/* ---- End Thumbnail Strip ---- */
+
+function getContainerWidth() {
+  containerWidth = imgContainer.clientWidth || window.innerWidth;
+  return containerWidth;
+}
+
+function setImgSrc(el, url) {
+  if (url) {
+    if (el.src !== url) el.src = url;
+    el.style.visibility = 'visible';
+  } else {
+    el.removeAttribute('src');
+    el.style.visibility = 'hidden';
+  }
+}
+
+/* Preload the neighbouring photos so the swipe never shows a blank/loading frame */
+function updateAdjacentImages() {
+  const prevPhoto = currentPhotoList[currentIndex - 1];
+  const nextPhoto = currentPhotoList[currentIndex + 1];
+  setImgSrc(lbImgPrev, prevPhoto ? prevPhoto.url : '');
+  setImgSrc(lbImgNext, nextPhoto ? nextPhoto.url : '');
+}
+
+function setTrackTransition(on) {
+  const t = on ? 'transform 0.26s cubic-bezier(0.25,1,0.5,1)' : 'none';
+  lbImgPrev.style.transition = t;
+  lightboxImg.style.transition = t;
+  lbImgNext.style.transition = t;
+}
+
+/* Positions all three images together as one strip: prev stuck on the left edge,
+   next stuck on the right edge of the current photo, so dragging reveals the
+   next photo sliding in attached — no fade, no blink. */
+function positionTrack(dragPx) {
+  const w = containerWidth || getContainerWidth();
+  lbImgPrev.style.transform = `translate(-50%,-50%) translate3d(${-w + dragPx}px, 0, 0)`;
+  lightboxImg.style.transform = `translate(-50%,-50%) translate3d(${dragPx + pointX}px, ${pointY}px, 0) scale(${scale})`;
+  lbImgNext.style.transform = `translate(-50%,-50%) translate3d(${w + dragPx}px, 0, 0)`;
+}
+
+function loadLightboxPhoto(index, instant) {
   if (!currentPhotoList[index]) return;
   currentIndex = index;
   const photo = currentPhotoList[index];
   currentLightboxUrl = photo.url;
-
   scale = 1; pointX = 0; pointY = 0;
+  getContainerWidth();
 
   if (instant) {
-    lightboxImg.style.display = 'none';
     lbLoading.style.display = 'flex';
-    lightboxImg.style.transition = 'none';
-    lightboxImg.style.opacity = '1';
-    lightboxImg.style.transform = 'translate3d(0,0,0) scale(1)';
+    lightboxImg.style.display = 'none';
+    lightboxImg.onload = () => {
+      lbLoading.style.display = 'none';
+      lightboxImg.style.display = 'block';
+    };
+    lightboxImg.src = photo.url;
   } else {
-    lightboxImg.style.transition = 'none';
-    lightboxImg.style.transform = `translate3d(${direction === 1 ? 60 : -60}px, 0, 0) scale(1)`;
-    lightboxImg.style.opacity = '0';
+    lightboxImg.style.display = 'block';
+    lightboxImg.src = photo.url;
   }
 
-  lightboxImg.src = photo.url;
-
-  requestAnimationFrame(() => {
-    lbLoading.style.display = 'none';
-    lightboxImg.style.display = 'block';
-    requestAnimationFrame(() => {
-      lightboxImg.style.transition = 'transform 0.22s cubic-bezier(0.25,1,0.5,1), opacity 0.22s ease';
-      lightboxImg.style.transform = 'translate3d(0,0,0) scale(1)';
-      lightboxImg.style.opacity = '1';
-    });
-  });
-
+  updateAdjacentImages();
+  setTrackTransition(false);
+  positionTrack(0);
   updateNavButtons();
 }
 
-function slideTransition(newIndex, direction) {
-  lightboxImg.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-  lightboxImg.style.transform = `translate3d(${direction === 1 ? -60 : 60}px, 0, 0) scale(1)`;
-  lightboxImg.style.opacity = '0';
-  setTimeout(() => loadLightboxPhoto(newIndex, direction, false), 180);
+/* Slides the whole strip fully over to the neighbouring photo, then swaps the
+   loaded src into the (already-cached) main image — visually seamless. */
+function completeSlide(direction) {
+  const targetIndex = currentIndex + direction;
+  if (!currentPhotoList[targetIndex]) { bounceEdge(direction); return; }
+  getContainerWidth();
+  setTrackTransition(true);
+  positionTrack(direction === 1 ? -containerWidth : containerWidth);
+  setTimeout(() => {
+    currentIndex = targetIndex;
+    const photo = currentPhotoList[currentIndex];
+    currentLightboxUrl = photo.url;
+    scale = 1; pointX = 0; pointY = 0;
+    setTrackTransition(false);
+    lightboxImg.src = photo.url;
+    updateAdjacentImages();
+    positionTrack(0);
+    updateNavButtons();
+
+    // New photo is now displayed: immediately lock its thumbnail
+    // to the far-left position with the active border.
+    syncThumbnails(true);
+  }, 260);
 }
 
 function bounceEdge(direction) {
-  lightboxImg.style.transition = 'transform 0.15s ease';
-  lightboxImg.style.transform = `translate3d(${direction === 1 ? -22 : 22}px, 0, 0) scale(1)`;
+  setTrackTransition(true);
+  positionTrack(direction === 1 ? -22 : 22);
   setTimeout(() => {
-    lightboxImg.style.transition = 'transform 0.15s ease';
-    lightboxImg.style.transform = 'translate3d(0,0,0) scale(1)';
+    setTrackTransition(true);
+    positionTrack(0);
   }, 150);
 }
 
 function goToNext() {
   if (currentIndex < currentPhotoList.length - 1) {
-    slideTransition(currentIndex + 1, 1);
+    completeSlide(1);
   } else {
     bounceEdge(1);
   }
@@ -769,7 +1061,7 @@ function goToNext() {
 
 function goToPrev() {
   if (currentIndex > 0) {
-    slideTransition(currentIndex - 1, -1);
+    completeSlide(-1);
   } else {
     bounceEdge(-1);
   }
@@ -780,7 +1072,8 @@ function openLightbox(id) {
   const idx = currentPhotoList.findIndex(p => p.id === id);
   currentIndex = idx >= 0 ? idx : 0;
   lightboxOverlay.style.display = 'flex';
-  loadLightboxPhoto(currentIndex, 0, true);
+  loadLightboxPhoto(currentIndex, true);
+  buildThumbnailStrip();
   history.pushState({ lightboxOpen: true }, '', '#lightbox');
 }
 
@@ -922,12 +1215,8 @@ function clampBoundaries() {
 
 function updateTransform(smooth = false) {
   clampBoundaries();
-  if (smooth) {
-    lightboxImg.style.transition = 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)';
-  } else {
-    lightboxImg.style.transition = 'none';
-  }
-  lightboxImg.style.transform = `translate3d(${pointX}px, ${pointY}px, 0px) scale(${scale})`;
+  lightboxImg.style.transition = smooth ? 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
+  lightboxImg.style.transform = `translate(-50%,-50%) translate3d(${pointX}px, ${pointY}px, 0px) scale(${scale})`;
 }
 
 function resetZoom() {
@@ -982,9 +1271,8 @@ imgContainer.addEventListener('touchmove', (e) => {
     const dy = e.touches[0].clientY - swipeStartY;
     if (Math.abs(dx) > Math.abs(dy)) {
       if (e.cancelable) e.preventDefault();
-      lightboxImg.style.transition = 'none';
-      lightboxImg.style.transform = `translate3d(${dx}px, 0, 0) scale(1)`;
-      lightboxImg.style.opacity = String(Math.max(1 - Math.abs(dx) / 500, 0.5));
+      setTrackTransition(false);
+      positionTrack(dx);
     }
   } else if (e.touches.length === 2) {
     let dist = Math.hypot(
@@ -1009,9 +1297,8 @@ imgContainer.addEventListener('touchend', (e) => {
       if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
         if (dx < 0) goToNext(); else goToPrev();
       } else {
-        lightboxImg.style.transition = 'transform 0.22s cubic-bezier(0.25,1,0.5,1), opacity 0.22s ease';
-        lightboxImg.style.transform = 'translate3d(0,0,0) scale(1)';
-        lightboxImg.style.opacity = '1';
+        setTrackTransition(true);
+        positionTrack(0);
       }
       return;
     }
@@ -1027,9 +1314,8 @@ imgContainer.addEventListener('touchcancel', () => {
   isPanning = false;
   if (swipeTracking) {
     swipeTracking = false;
-    lightboxImg.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
-    lightboxImg.style.transform = 'translate3d(0,0,0) scale(1)';
-    lightboxImg.style.opacity = '1';
+    setTrackTransition(true);
+    positionTrack(0);
   }
 });
 
@@ -1050,9 +1336,8 @@ imgContainer.addEventListener('mousemove', (e) => {
     const dx = e.clientX - swipeStartX;
     const dy = e.clientY - swipeStartY;
     if (Math.abs(dx) > Math.abs(dy)) {
-      lightboxImg.style.transition = 'none';
-      lightboxImg.style.transform = `translate3d(${dx}px, 0, 0) scale(1)`;
-      lightboxImg.style.opacity = String(Math.max(1 - Math.abs(dx) / 500, 0.5));
+      setTrackTransition(false);
+      positionTrack(dx);
     }
   }
 });
@@ -1065,9 +1350,8 @@ function endMouseSwipe(e) {
   if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
     if (dx < 0) goToNext(); else goToPrev();
   } else {
-    lightboxImg.style.transition = 'transform 0.22s cubic-bezier(0.25,1,0.5,1), opacity 0.22s ease';
-    lightboxImg.style.transform = 'translate3d(0,0,0) scale(1)';
-    lightboxImg.style.opacity = '1';
+    setTrackTransition(true);
+    positionTrack(0);
   }
 }
 
