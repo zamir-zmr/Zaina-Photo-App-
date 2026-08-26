@@ -21,30 +21,237 @@
   /* Header Design */
   #header {
     position:fixed; top:0; left:0; right:0; height:64px;
-    background: rgba(25, 16, 31, 0.85);
+    background:
+      radial-gradient(circle at 12% 25%, rgba(255, 110, 170, 0.24), transparent 50%),
+      radial-gradient(circle at 88% 75%, rgba(170, 90, 220, 0.26), transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(255, 170, 200, 0.08), transparent 70%),
+      linear-gradient(120deg, rgba(38, 18, 46, 0.94), rgba(20, 11, 28, 0.94));
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     display:flex; align-items:center; justify-content:space-between;
     padding:0 16px; z-index:50;
-    border-bottom: 1px solid rgba(255, 182, 193, 0.15);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255, 182, 193, 0.2);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(255,255,255,0.03);
     will-change: transform;
+    overflow: hidden;
   }
-  #header .title-area { display: flex; align-items: center; gap: 8px; }
+  #header .title-area { display: flex; align-items: center; gap: 8px; position: relative; z-index: 2; }
   #header .title {
     color:#ffb6c1; font-family: 'Sacramento', cursive; font-size:28px; font-weight:700;
     text-shadow: 0 0 10px rgba(255, 182, 193, 0.4);
     animation: pulseTitle 3s infinite ease-in-out;
   }
+  #rightControls { position: relative; z-index: 2; }
+  #addBtn { position: relative; z-index: 1; }
 
-  /* SMALL TOP FLOWER CUSTOM TRAJECTORY ANIMATION */
+  /* MULTI-BUTTERFLY FIELD — each one roams the entire header in its own zig-zag path,
+     covering left/right/top/bottom corners, not just a straight middle line */
+  .butterfly-field {
+    position: absolute; inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .flying-butterfly {
+    position: absolute;
+    left: 0%; top: 0%;
+    width: 34px; height: 34px;
+    transform-origin: center center;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: transform, left, top;
+  }
+  .flying-butterfly .bob {
+    width: 100%; height: 100%;
+    animation: bobFlutter 1.8s infinite ease-in-out;
+  }
+
+  .bf1  { width: 34px; height: 34px; animation-name: flyPath1;  animation-duration: 12s; animation-delay: 0s; }
+  .bf2  { width: 28px; height: 28px; animation-name: flyPath2;  animation-duration: 14s; animation-delay: 1.5s; }
+  .bf3  { width: 38px; height: 38px; animation-name: flyPath3;  animation-duration: 16s; animation-delay: 3s; }
+  .bf4  { width: 26px; height: 26px; animation-name: flyPath4;  animation-duration: 11s; animation-delay: 0.8s; }
+  .bf5  { width: 32px; height: 32px; animation-name: flyPath5;  animation-duration: 15s; animation-delay: 4s; }
+  .bf6  { width: 36px; height: 36px; animation-name: flyPath6;  animation-duration: 13s; animation-delay: 2.2s; }
+  .bf7  { width: 24px; height: 24px; animation-name: flyPath7;  animation-duration: 17s; animation-delay: 5s; }
+  .bf8  { width: 30px; height: 30px; animation-name: flyPath8;  animation-duration: 12.5s; animation-delay: 1s; }
+  .bf9  { width: 27px; height: 27px; animation-name: flyPath9;  animation-duration: 18s; animation-delay: 3.6s; }
+  .bf10 { width: 33px; height: 33px; animation-name: flyPath10; animation-duration: 14.5s; animation-delay: 2.8s; }
+
+  /* Each path loops seamlessly (0% and 100% match) and sweeps across the full width and height
+     with many gentle waypoints — a soft S-curve wave instead of straight zig-zag lines,
+     plus a slight rotation so the body banks naturally into each turn */
+  @keyframes flyPath1 {
+    0%    { left: -10%; top: 10%; transform: rotate(-6deg); }
+    12%   { left: 8%;   top: 42%; transform: rotate(10deg); }
+    25%   { left: 24%;  top: 64%; transform: rotate(-4deg); }
+    38%   { left: 42%;  top: 30%; transform: rotate(-14deg); }
+    50%   { left: 60%;  top: 8%;  transform: rotate(8deg); }
+    62%   { left: 76%;  top: 38%; transform: rotate(-10deg); }
+    75%   { left: 90%;  top: 58%; transform: rotate(4deg); }
+    88%   { left: 100%; top: 30%; transform: rotate(-8deg); }
+    100%  { left: -10%; top: 10%; transform: rotate(-6deg); }
+  }
+  @keyframes flyPath2 {
+    0%    { left: 105%; top: 18%; transform: rotate(180deg); }
+    14%   { left: 84%;  top: 50%; transform: rotate(196deg); }
+    28%   { left: 66%;  top: 12%; transform: rotate(168deg); }
+    42%   { left: 48%;  top: 58%; transform: rotate(200deg); }
+    56%   { left: 32%;  top: 22%; transform: rotate(172deg); }
+    70%   { left: 16%;  top: 52%; transform: rotate(190deg); }
+    85%   { left: 0%;   top: 20%; transform: rotate(176deg); }
+    100%  { left: 105%; top: 18%; transform: rotate(180deg); }
+  }
+  @keyframes flyPath3 {
+    0%    { left: -10%; top: 58%; transform: rotate(-4deg); }
+    13%   { left: 10%;  top: 26%; transform: rotate(-16deg); }
+    27%   { left: 28%;  top: 8%;  transform: rotate(6deg); }
+    40%   { left: 46%;  top: 46%; transform: rotate(-12deg); }
+    53%   { left: 62%;  top: 66%; transform: rotate(2deg); }
+    67%   { left: 78%;  top: 24%; transform: rotate(-10deg); }
+    82%   { left: 92%;  top: 12%; transform: rotate(8deg); }
+    100%  { left: -10%; top: 58%; transform: rotate(-4deg); }
+  }
+  @keyframes flyPath4 {
+    0%    { left: 105%; top: 60%; transform: rotate(184deg); }
+    15%   { left: 86%;  top: 20%; transform: rotate(166deg); }
+    30%   { left: 68%;  top: 55%; transform: rotate(198deg); }
+    45%   { left: 50%;  top: 10%; transform: rotate(170deg); }
+    60%   { left: 32%;  top: 48%; transform: rotate(194deg); }
+    75%   { left: 14%;  top: 16%; transform: rotate(174deg); }
+    90%   { left: -4%;  top: 40%; transform: rotate(188deg); }
+    100%  { left: 105%; top: 60%; transform: rotate(184deg); }
+  }
+  @keyframes flyPath5 {
+    0%    { left: -10%; top: 22%; transform: rotate(-8deg); }
+    14%   { left: 12%;  top: 54%; transform: rotate(12deg); }
+    28%   { left: 30%;  top: 12%; transform: rotate(-14deg); }
+    42%   { left: 48%;  top: 48%; transform: rotate(6deg); }
+    56%   { left: 64%;  top: 16%; transform: rotate(-10deg); }
+    70%   { left: 80%;  top: 52%; transform: rotate(4deg); }
+    85%   { left: 94%;  top: 20%; transform: rotate(-6deg); }
+    100%  { left: -10%; top: 22%; transform: rotate(-8deg); }
+  }
+  @keyframes flyPath6 {
+    0%    { left: 105%; top: 10%; transform: rotate(176deg); }
+    13%   { left: 88%;  top: 46%; transform: rotate(192deg); }
+    27%   { left: 70%;  top: 8%;  transform: rotate(164deg); }
+    40%   { left: 54%;  top: 44%; transform: rotate(200deg); }
+    54%   { left: 38%;  top: 14%; transform: rotate(170deg); }
+    68%   { left: 22%;  top: 50%; transform: rotate(196deg); }
+    84%   { left: 4%;   top: 18%; transform: rotate(178deg); }
+    100%  { left: 105%; top: 10%; transform: rotate(176deg); }
+  }
+  @keyframes flyPath7 {
+    0%    { left: -10%; top: 64%; transform: rotate(4deg); }
+    12%   { left: 10%;  top: 22%; transform: rotate(-12deg); }
+    26%   { left: 26%;  top: 50%; transform: rotate(8deg); }
+    40%   { left: 44%;  top: 10%; transform: rotate(-16deg); }
+    54%   { left: 60%;  top: 46%; transform: rotate(6deg); }
+    68%   { left: 78%;  top: 14%; transform: rotate(-10deg); }
+    84%   { left: 94%;  top: 40%; transform: rotate(2deg); }
+    100%  { left: -10%; top: 64%; transform: rotate(4deg); }
+  }
+  @keyframes flyPath8 {
+    0%    { left: 105%; top: 32%; transform: rotate(190deg); }
+    14%   { left: 84%;  top: 62%; transform: rotate(172deg); }
+    28%   { left: 66%;  top: 14%; transform: rotate(204deg); }
+    42%   { left: 48%;  top: 50%; transform: rotate(166deg); }
+    56%   { left: 30%;  top: 10%; transform: rotate(192deg); }
+    70%   { left: 14%;  top: 46%; transform: rotate(174deg); }
+    86%   { left: -2%;  top: 20%; transform: rotate(186deg); }
+    100%  { left: 105%; top: 32%; transform: rotate(190deg); }
+  }
+  @keyframes flyPath9 {
+    0%    { left: -10%; top: 46%; transform: rotate(-10deg); }
+    15%   { left: 14%;  top: 10%; transform: rotate(14deg); }
+    30%   { left: 32%;  top: 44%; transform: rotate(-6deg); }
+    45%   { left: 50%;  top: 60%; transform: rotate(10deg); }
+    60%   { left: 66%;  top: 20%; transform: rotate(-12deg); }
+    75%   { left: 84%;  top: 54%; transform: rotate(4deg); }
+    90%   { left: 100%; top: 24%; transform: rotate(-8deg); }
+    100%  { left: -10%; top: 46%; transform: rotate(-10deg); }
+  }
+  @keyframes flyPath10 {
+    0%    { left: 105%; top: 52%; transform: rotate(168deg); }
+    13%   { left: 86%;  top: 12%; transform: rotate(198deg); }
+    27%   { left: 68%;  top: 48%; transform: rotate(172deg); }
+    41%   { left: 50%;  top: 64%; transform: rotate(194deg); }
+    55%   { left: 34%;  top: 22%; transform: rotate(178deg); }
+    69%   { left: 18%;  top: 56%; transform: rotate(188deg); }
+    85%   { left: 2%;   top: 14%; transform: rotate(180deg); }
+    100%  { left: 105%; top: 52%; transform: rotate(168deg); }
+  }
+
+  @keyframes bobFlutter {
+    0%   { transform: translateY(0) rotate(0deg); }
+    25%  { transform: translateY(-3px) rotate(-4deg); }
+    50%  { transform: translateY(3px) rotate(4deg); }
+    75%  { transform: translateY(-2px) rotate(-2deg); }
+    100% { transform: translateY(0) rotate(0deg); }
+  }
+
+
+  /* SMALL TOP BUTTERFLY (kept for empty-state icon reuse) */
   .top-flower {
-    font-size: 24px;
+    width: 24px;
+    height: 24px;
     display: inline-block;
     cursor: pointer;
     animation: customPathMotion 4s infinite cubic-bezier(0.25, 1, 0.5, 1);
     transform-origin: center;
     will-change: transform;
   }
+
+  .butterfly-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    perspective: 220px;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(255,140,180,0.4)) saturate(1.25) contrast(1.08);
+  }
+  .wing {
+    transform-box: fill-box;
+    transform-style: preserve-3d;
+    backface-visibility: visible;
+  }
+  .wing path {
+    stroke: rgba(20, 6, 14, 0.4);
+    stroke-width: 0.7;
+    stroke-linejoin: round;
+    paint-order: fill;
+  }
+  .wing-left {
+    transform-origin: right center;
+    animation: flapLeft3D 0.42s infinite cubic-bezier(0.45, 0, 0.4, 1);
+  }
+  .wing-right {
+    transform-origin: left center;
+    animation: flapRight3D 0.42s infinite cubic-bezier(0.45, 0, 0.4, 1);
+  }
+  /* Real wings don't just shrink — they fold up in 3D like a book closing,
+     fast on the downbeat and easing gently back open */
+  @keyframes flapLeft3D {
+    0%   { transform: rotateY(0deg) rotateZ(2deg) scaleY(1); }
+    38%  { transform: rotateY(78deg) rotateZ(6deg) scaleY(0.96); }
+    50%  { transform: rotateY(92deg) rotateZ(8deg) scaleY(0.94); }
+    65%  { transform: rotateY(55deg) rotateZ(4deg) scaleY(0.97); }
+    100% { transform: rotateY(0deg) rotateZ(2deg) scaleY(1); }
+  }
+  @keyframes flapRight3D {
+    0%   { transform: rotateY(0deg) rotateZ(-2deg) scaleY(1); }
+    38%  { transform: rotateY(-78deg) rotateZ(-6deg) scaleY(0.96); }
+    50%  { transform: rotateY(-92deg) rotateZ(-8deg) scaleY(0.94); }
+    65%  { transform: rotateY(-55deg) rotateZ(-4deg) scaleY(0.97); }
+    100% { transform: rotateY(0deg) rotateZ(-2deg) scaleY(1); }
+  }
+  /* Slight per-butterfly desync so the whole field doesn't flap in lockstep */
+  .bf2 .wing-left, .bf2 .wing-right,
+  .bf5 .wing-left, .bf5 .wing-right,
+  .bf8 .wing-left, .bf8 .wing-right { animation-duration: 0.5s; }
+  .bf3 .wing-left, .bf3 .wing-right,
+  .bf7 .wing-left, .bf7 .wing-right,
+  .bf10 .wing-left, .bf10 .wing-right { animation-duration: 0.36s; }
+  .bf4 .wing-left, .bf4 .wing-right,
+  .bf9 .wing-left, .bf9 .wing-right { animation-duration: 0.46s; }
 
   /* Buttons Styling */
   button {
@@ -200,7 +407,8 @@
     background: rgba(255, 117, 140, 0.12);
     border: 1px solid rgba(255, 182, 193, 0.25);
     border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 42px; box-shadow: 0 10px 25px rgba(255, 117, 140, 0.2);
+    padding: 18px;
+    box-shadow: 0 10px 25px rgba(255, 117, 140, 0.2);
     animation: customPathMotion 4s infinite cubic-bezier(0.25, 1, 0.5, 1);
     transform-origin: center;
     will-change: transform;
@@ -423,11 +631,113 @@
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+  <defs>
+    <linearGradient id="gradPink" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9ec7"/>
+      <stop offset="55%" stop-color="#ff6f9c"/>
+      <stop offset="100%" stop-color="#e0447a"/>
+    </linearGradient>
+    <linearGradient id="gradPinkLower" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffc4dc"/>
+      <stop offset="100%" stop-color="#ff8fb8"/>
+    </linearGradient>
+    <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e6b8e6"/>
+      <stop offset="55%" stop-color="#c583d6"/>
+      <stop offset="100%" stop-color="#9a4fc2"/>
+    </linearGradient>
+    <linearGradient id="gradPurpleLower" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0d4f5"/>
+      <stop offset="100%" stop-color="#d9a8ec"/>
+    </linearGradient>
+    <linearGradient id="gradBlush" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd1da"/>
+      <stop offset="55%" stop-color="#ff9fb3"/>
+      <stop offset="100%" stop-color="#f4577f"/>
+    </linearGradient>
+    <linearGradient id="gradBlushLower" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe6ea"/>
+      <stop offset="55%" stop-color="#ffb3c4"/>
+      <stop offset="100%" stop-color="#f07d99"/>
+    </linearGradient>
+    <radialGradient id="glossHi" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2c1420"/>
+      <stop offset="45%" stop-color="#5a2e42"/>
+      <stop offset="100%" stop-color="#1f0f18"/>
+    </linearGradient>
+    <filter id="wingShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.4" flood-color="#3a0f22" flood-opacity="0.35"/>
+    </filter>
+    <filter id="wingGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
 
 <div id="header">
+  <div class="butterfly-field">
+    <div class="flying-butterfly bf1"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf2"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf3"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf4"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf5"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf6"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf7"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf8"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf9"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+    <div class="flying-butterfly bf10"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
+      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
+      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
+    </svg></div></div>
+  </div>
   <div class="title-area">
     <div class="title">Zaina Parveen</div>
-    <div class="top-flower">🌸</div>
   </div>
   <div id="rightControls">
     <button id="addBtn">
@@ -473,7 +783,20 @@
 
     <!-- Animated No Photos Screen -->
     <div class="no-photos-box" id="emptyText">
-      <div class="empty-heart-wrap">🌸</div>
+      <div class="empty-heart-wrap">
+        <svg class="butterfly-svg" viewBox="0 0 100 100">
+          <g class="wing wing-left">
+            <path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/>
+            <path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/>
+          </g>
+          <g class="wing wing-right">
+            <path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/>
+            <path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/>
+          </g>
+          <ellipse cx="50" cy="52" rx="2.6" ry="16" fill="#4a2c3a"/>
+          <path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#4a2c3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
       <div class="empty-title">No Photos Yet</div>
       <div class="empty-subtitle">Zaina's gallery is empty right now. Tap below to upload lovely photos!</div>
       <button class="empty-action-btn" onclick="fileInput.click()">✨ Upload First Photo</button>
