@@ -51,6 +51,7 @@
     transform: translateZ(0);
     will-change: transform;
     isolation: isolate;
+    contain: layout style;
   }
   .flying-butterfly {
     position: fixed;
@@ -60,128 +61,130 @@
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     animation-play-state: running !important;
-    will-change: transform, left, top;
+    will-change: transform;
     backface-visibility: hidden;
+    transform: translateZ(0);
   }
   .flying-butterfly .bob {
     width: 100%; height: 100%;
     animation: bobFlutter 1.8s infinite ease-in-out;
   }
 
-  .bf1  { width: 34px; height: 34px; animation-name: flyPath1;  animation-duration: 12s; animation-delay: 0s; }
-  .bf2  { width: 28px; height: 28px; animation-name: flyPath2;  animation-duration: 14s; animation-delay: 1.5s; }
-  .bf3  { width: 38px; height: 38px; animation-name: flyPath3;  animation-duration: 16s; animation-delay: 3s; }
-  .bf4  { width: 26px; height: 26px; animation-name: flyPath4;  animation-duration: 11s; animation-delay: 0.8s; }
-  .bf5  { width: 32px; height: 32px; animation-name: flyPath5;  animation-duration: 15s; animation-delay: 4s; }
-  .bf6  { width: 36px; height: 36px; animation-name: flyPath6;  animation-duration: 13s; animation-delay: 2.2s; }
-  .bf7  { width: 24px; height: 24px; animation-name: flyPath7;  animation-duration: 17s; animation-delay: 5s; }
+  .bf1  { width: 34px; height: 34px; animation-name: flyPath1;  animation-duration: 12s;   animation-delay: 0s; }
+  .bf2  { width: 28px; height: 28px; animation-name: flyPath2;  animation-duration: 14s;   animation-delay: 1.5s; }
+  .bf3  { width: 38px; height: 38px; animation-name: flyPath3;  animation-duration: 16s;   animation-delay: 3s; }
+  .bf4  { width: 26px; height: 26px; animation-name: flyPath4;  animation-duration: 11s;   animation-delay: 0.8s; }
+  .bf5  { width: 32px; height: 32px; animation-name: flyPath5;  animation-duration: 15s;   animation-delay: 4s; }
+  .bf6  { width: 36px; height: 36px; animation-name: flyPath6;  animation-duration: 13s;   animation-delay: 2.2s; }
+  .bf7  { width: 24px; height: 24px; animation-name: flyPath7;  animation-duration: 17s;   animation-delay: 5s; }
   .bf8  { width: 30px; height: 30px; animation-name: flyPath8;  animation-duration: 12.5s; animation-delay: 1s; }
-  .bf9  { width: 27px; height: 27px; animation-name: flyPath9;  animation-duration: 18s; animation-delay: 3.6s; }
+  .bf9  { width: 27px; height: 27px; animation-name: flyPath9;  animation-duration: 18s;   animation-delay: 3.6s; }
   .bf10 { width: 33px; height: 33px; animation-name: flyPath10; animation-duration: 14.5s; animation-delay: 2.8s; }
 
   /* Each path loops seamlessly (0% and 100% match) and sweeps across the full width and height
      with many gentle waypoints — a soft S-curve wave instead of straight zig-zag lines,
      plus a slight rotation so the body banks naturally into each turn */
+  /* All flyPath keyframes use ONLY transform (translate+rotate) — GPU compositor thread only, zero layout cost */
   @keyframes flyPath1 {
-    0%    { left: -10%; top: -5%;  transform: rotate(-6deg); }
-    12%   { left: 8%;   top: 30%;  transform: rotate(10deg); }
-    25%   { left: 24%;  top: 70%;  transform: rotate(-4deg); }
-    38%   { left: 42%;  top: 20%;  transform: rotate(-14deg); }
-    50%   { left: 60%;  top: -3%;  transform: rotate(8deg); }
-    62%   { left: 76%;  top: 50%;  transform: rotate(-10deg); }
-    75%   { left: 90%;  top: 85%;  transform: rotate(4deg); }
-    88%   { left: 100%; top: 40%;  transform: rotate(-8deg); }
-    100%  { left: -10%; top: -5%;  transform: rotate(-6deg); }
+    0%    { transform: translate(-10vw, -5vh)  rotate(-6deg); }
+    12%   { transform: translate(8vw,  30vh)   rotate(10deg); }
+    25%   { transform: translate(24vw, 70vh)   rotate(-4deg); }
+    38%   { transform: translate(42vw, 20vh)   rotate(-14deg); }
+    50%   { transform: translate(60vw, -3vh)   rotate(8deg); }
+    62%   { transform: translate(76vw, 50vh)   rotate(-10deg); }
+    75%   { transform: translate(90vw, 85vh)   rotate(4deg); }
+    88%   { transform: translate(100vw,40vh)   rotate(-8deg); }
+    100%  { transform: translate(-10vw,-5vh)   rotate(-6deg); }
   }
   @keyframes flyPath2 {
-    0%    { left: 105%; top: 5%;  transform: rotate(180deg); }
-    14%   { left: 84%;  top: 60%; transform: rotate(196deg); }
-    28%   { left: 66%;  top: -4%; transform: rotate(168deg); }
-    42%   { left: 48%;  top: 80%; transform: rotate(200deg); }
-    56%   { left: 32%;  top: 10%; transform: rotate(172deg); }
-    70%   { left: 16%;  top: 65%; transform: rotate(190deg); }
-    85%   { left: 0%;   top: 30%; transform: rotate(176deg); }
-    100%  { left: 105%; top: 5%;  transform: rotate(180deg); }
+    0%    { transform: translate(105vw, 5vh)  rotate(180deg); }
+    14%   { transform: translate(84vw, 60vh)  rotate(196deg); }
+    28%   { transform: translate(66vw, -4vh)  rotate(168deg); }
+    42%   { transform: translate(48vw, 80vh)  rotate(200deg); }
+    56%   { transform: translate(32vw, 10vh)  rotate(172deg); }
+    70%   { transform: translate(16vw, 65vh)  rotate(190deg); }
+    85%   { transform: translate(0vw,  30vh)  rotate(176deg); }
+    100%  { transform: translate(105vw,5vh)   rotate(180deg); }
   }
   @keyframes flyPath3 {
-    0%    { left: -10%; top: 75%;  transform: rotate(-4deg); }
-    13%   { left: 10%;  top: 10%;  transform: rotate(-16deg); }
-    27%   { left: 28%;  top: -4%;  transform: rotate(6deg); }
-    40%   { left: 46%;  top: 55%;  transform: rotate(-12deg); }
-    53%   { left: 62%;  top: 90%;  transform: rotate(2deg); }
-    67%   { left: 78%;  top: 15%;  transform: rotate(-10deg); }
-    82%   { left: 92%;  top: -3%;  transform: rotate(8deg); }
-    100%  { left: -10%; top: 75%;  transform: rotate(-4deg); }
+    0%    { transform: translate(-10vw, 75vh)  rotate(-4deg); }
+    13%   { transform: translate(10vw,  10vh)  rotate(-16deg); }
+    27%   { transform: translate(28vw,  -4vh)  rotate(6deg); }
+    40%   { transform: translate(46vw,  55vh)  rotate(-12deg); }
+    53%   { transform: translate(62vw,  90vh)  rotate(2deg); }
+    67%   { transform: translate(78vw,  15vh)  rotate(-10deg); }
+    82%   { transform: translate(92vw,  -3vh)  rotate(8deg); }
+    100%  { transform: translate(-10vw, 75vh)  rotate(-4deg); }
   }
   @keyframes flyPath4 {
-    0%    { left: 105%; top: 85%;  transform: rotate(184deg); }
-    15%   { left: 86%;  top: 5%;   transform: rotate(166deg); }
-    30%   { left: 68%;  top: 70%;  transform: rotate(198deg); }
-    45%   { left: 50%;  top: -4%;  transform: rotate(170deg); }
-    60%   { left: 32%;  top: 60%;  transform: rotate(194deg); }
-    75%   { left: 14%;  top: 2%;   transform: rotate(174deg); }
-    90%   { left: -4%;  top: 50%;  transform: rotate(188deg); }
-    100%  { left: 105%; top: 85%;  transform: rotate(184deg); }
+    0%    { transform: translate(105vw, 85vh) rotate(184deg); }
+    15%   { transform: translate(86vw,  5vh)  rotate(166deg); }
+    30%   { transform: translate(68vw,  70vh) rotate(198deg); }
+    45%   { transform: translate(50vw,  -4vh) rotate(170deg); }
+    60%   { transform: translate(32vw,  60vh) rotate(194deg); }
+    75%   { transform: translate(14vw,  2vh)  rotate(174deg); }
+    90%   { transform: translate(-4vw,  50vh) rotate(188deg); }
+    100%  { transform: translate(105vw, 85vh) rotate(184deg); }
   }
   @keyframes flyPath5 {
-    0%    { left: -10%; top: 8%;   transform: rotate(-8deg); }
-    14%   { left: 12%;  top: 65%;  transform: rotate(12deg); }
-    28%   { left: 30%;  top: -3%;  transform: rotate(-14deg); }
-    42%   { left: 48%;  top: 80%;  transform: rotate(6deg); }
-    56%   { left: 64%;  top: 2%;   transform: rotate(-10deg); }
-    70%   { left: 80%;  top: 70%;  transform: rotate(4deg); }
-    85%   { left: 94%;  top: 10%;  transform: rotate(-6deg); }
-    100%  { left: -10%; top: 8%;   transform: rotate(-8deg); }
+    0%    { transform: translate(-10vw, 8vh)  rotate(-8deg); }
+    14%   { transform: translate(12vw,  65vh) rotate(12deg); }
+    28%   { transform: translate(30vw,  -3vh) rotate(-14deg); }
+    42%   { transform: translate(48vw,  80vh) rotate(6deg); }
+    56%   { transform: translate(64vw,  2vh)  rotate(-10deg); }
+    70%   { transform: translate(80vw,  70vh) rotate(4deg); }
+    85%   { transform: translate(94vw,  10vh) rotate(-6deg); }
+    100%  { transform: translate(-10vw, 8vh)  rotate(-8deg); }
   }
   @keyframes flyPath6 {
-    0%    { left: 105%; top: -4%;  transform: rotate(176deg); }
-    13%   { left: 88%;  top: 55%;  transform: rotate(192deg); }
-    27%   { left: 70%;  top: -3%;  transform: rotate(164deg); }
-    40%   { left: 54%;  top: 75%;  transform: rotate(200deg); }
-    54%   { left: 38%;  top: 2%;   transform: rotate(170deg); }
-    68%   { left: 22%;  top: 65%;  transform: rotate(196deg); }
-    84%   { left: 4%;   top: 5%;   transform: rotate(178deg); }
-    100%  { left: 105%; top: -4%;  transform: rotate(176deg); }
+    0%    { transform: translate(105vw, -4vh) rotate(176deg); }
+    13%   { transform: translate(88vw,  55vh) rotate(192deg); }
+    27%   { transform: translate(70vw,  -3vh) rotate(164deg); }
+    40%   { transform: translate(54vw,  75vh) rotate(200deg); }
+    54%   { transform: translate(38vw,  2vh)  rotate(170deg); }
+    68%   { transform: translate(22vw,  65vh) rotate(196deg); }
+    84%   { transform: translate(4vw,   5vh)  rotate(178deg); }
+    100%  { transform: translate(105vw, -4vh) rotate(176deg); }
   }
   @keyframes flyPath7 {
-    0%    { left: -10%; top: 90%;  transform: rotate(4deg); }
-    12%   { left: 10%;  top: 8%;   transform: rotate(-12deg); }
-    26%   { left: 26%;  top: 60%;  transform: rotate(8deg); }
-    40%   { left: 44%;  top: -4%;  transform: rotate(-16deg); }
-    54%   { left: 60%;  top: 55%;  transform: rotate(6deg); }
-    68%   { left: 78%;  top: 2%;   transform: rotate(-10deg); }
-    84%   { left: 94%;  top: 78%;  transform: rotate(2deg); }
-    100%  { left: -10%; top: 90%;  transform: rotate(4deg); }
+    0%    { transform: translate(-10vw, 90vh) rotate(4deg); }
+    12%   { transform: translate(10vw,  8vh)  rotate(-12deg); }
+    26%   { transform: translate(26vw,  60vh) rotate(8deg); }
+    40%   { transform: translate(44vw,  -4vh) rotate(-16deg); }
+    54%   { transform: translate(60vw,  55vh) rotate(6deg); }
+    68%   { transform: translate(78vw,  2vh)  rotate(-10deg); }
+    84%   { transform: translate(94vw,  78vh) rotate(2deg); }
+    100%  { transform: translate(-10vw, 90vh) rotate(4deg); }
   }
   @keyframes flyPath8 {
-    0%    { left: 105%; top: 40%;  transform: rotate(190deg); }
-    14%   { left: 84%;  top: 85%;  transform: rotate(172deg); }
-    28%   { left: 66%;  top: -3%;  transform: rotate(204deg); }
-    42%   { left: 48%;  top: 70%;  transform: rotate(166deg); }
-    56%   { left: 30%;  top: -4%;  transform: rotate(192deg); }
-    70%   { left: 14%;  top: 60%;  transform: rotate(174deg); }
-    86%   { left: -2%;  top: 5%;   transform: rotate(186deg); }
-    100%  { left: 105%; top: 40%;  transform: rotate(190deg); }
+    0%    { transform: translate(105vw, 40vh) rotate(190deg); }
+    14%   { transform: translate(84vw,  85vh) rotate(172deg); }
+    28%   { transform: translate(66vw,  -3vh) rotate(204deg); }
+    42%   { transform: translate(48vw,  70vh) rotate(166deg); }
+    56%   { transform: translate(30vw,  -4vh) rotate(192deg); }
+    70%   { transform: translate(14vw,  60vh) rotate(174deg); }
+    86%   { transform: translate(-2vw,  5vh)  rotate(186deg); }
+    100%  { transform: translate(105vw, 40vh) rotate(190deg); }
   }
   @keyframes flyPath9 {
-    0%    { left: -10%; top: 55%;  transform: rotate(-10deg); }
-    15%   { left: 14%;  top: -3%;  transform: rotate(14deg); }
-    30%   { left: 32%;  top: 75%;  transform: rotate(-6deg); }
-    45%   { left: 50%;  top: 95%;  transform: rotate(10deg); }
-    60%   { left: 66%;  top: 5%;   transform: rotate(-12deg); }
-    75%   { left: 84%;  top: 80%;  transform: rotate(4deg); }
-    90%   { left: 100%; top: 10%;  transform: rotate(-8deg); }
-    100%  { left: -10%; top: 55%;  transform: rotate(-10deg); }
+    0%    { transform: translate(-10vw, 55vh) rotate(-10deg); }
+    15%   { transform: translate(14vw,  -3vh) rotate(14deg); }
+    30%   { transform: translate(32vw,  75vh) rotate(-6deg); }
+    45%   { transform: translate(50vw,  95vh) rotate(10deg); }
+    60%   { transform: translate(66vw,  5vh)  rotate(-12deg); }
+    75%   { transform: translate(84vw,  80vh) rotate(4deg); }
+    90%   { transform: translate(100vw, 10vh) rotate(-8deg); }
+    100%  { transform: translate(-10vw, 55vh) rotate(-10deg); }
   }
   @keyframes flyPath10 {
-    0%    { left: 105%; top: 70%;  transform: rotate(168deg); }
-    13%   { left: 86%;  top: -4%;  transform: rotate(198deg); }
-    27%   { left: 68%;  top: 60%;  transform: rotate(172deg); }
-    41%   { left: 50%;  top: 90%;  transform: rotate(194deg); }
-    55%   { left: 34%;  top: 8%;   transform: rotate(178deg); }
-    69%   { left: 18%;  top: 75%;  transform: rotate(188deg); }
-    85%   { left: 2%;   top: -3%;  transform: rotate(180deg); }
-    100%  { left: 105%; top: 70%;  transform: rotate(168deg); }
+    0%    { transform: translate(105vw, 70vh) rotate(168deg); }
+    13%   { transform: translate(86vw,  -4vh) rotate(198deg); }
+    27%   { transform: translate(68vw,  60vh) rotate(172deg); }
+    41%   { transform: translate(50vw,  90vh) rotate(194deg); }
+    55%   { transform: translate(34vw,  8vh)  rotate(178deg); }
+    69%   { transform: translate(18vw,  75vh) rotate(188deg); }
+    85%   { transform: translate(2vw,   -3vh) rotate(180deg); }
+    100%  { transform: translate(105vw, 70vh) rotate(168deg); }
   }
 
   @keyframes bobFlutter {
@@ -205,17 +208,18 @@
     transform: translateZ(0);
     will-change: transform;
     isolation: isolate;
-    contain: layout style paint;
+    contain: layout style;
   }
   .home-flying-butterfly {
-    position: absolute;
+    position: fixed;
     left: 0%; top: 0%;
     transform-origin: center center;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     animation-play-state: running !important;
-    will-change: transform, left, top;
+    will-change: transform;
     backface-visibility: hidden;
+    transform: translateZ(0);
   }
   .home-flying-butterfly .bob {
     width: 100%; height: 100%;
@@ -233,107 +237,106 @@
   .hbf9 { width: 50px; height: 50px; animation-name: homeFly9; animation-duration: 23s; animation-delay: 8.5s; }
   .hbf10 { width: 40px; height: 40px; animation-name: homeFly10; animation-duration: 27s; animation-delay: 10s; }
 
-  /* Each loop starts a little above the header (hidden behind it), dips down through
-     the whole home screen in a gentle S-curve, and returns — seamless, continuous. */
+  /* homeFly — GPU-only transform, no left/top layout cost */
   @keyframes homeFly1 {
-    0%    { left: -8%;  top: -4%;  transform: rotate(-8deg); }
-    14%   { left: 12%;  top: 22%;  transform: rotate(12deg); }
-    28%   { left: 30%;  top: 45%;  transform: rotate(-6deg); }
-    42%   { left: 50%;  top: 20%;  transform: rotate(-16deg); }
-    56%   { left: 68%;  top: 58%;  transform: rotate(10deg); }
-    70%   { left: 84%;  top: 30%;  transform: rotate(-10deg); }
-    85%   { left: 100%; top: 65%;  transform: rotate(6deg); }
-    100%  { left: -8%;  top: -4%;  transform: rotate(-8deg); }
+    0%    { transform: translate(-8vw,  -4vh) rotate(-8deg); }
+    14%   { transform: translate(12vw,  22vh) rotate(12deg); }
+    28%   { transform: translate(30vw,  45vh) rotate(-6deg); }
+    42%   { transform: translate(50vw,  20vh) rotate(-16deg); }
+    56%   { transform: translate(68vw,  58vh) rotate(10deg); }
+    70%   { transform: translate(84vw,  30vh) rotate(-10deg); }
+    85%   { transform: translate(100vw, 65vh) rotate(6deg); }
+    100%  { transform: translate(-8vw,  -4vh) rotate(-8deg); }
   }
   @keyframes homeFly2 {
-    0%    { left: 105%; top: 10%;  transform: rotate(182deg); }
-    16%   { left: 82%;  top: 40%;  transform: rotate(196deg); }
-    32%   { left: 62%;  top: 15%;  transform: rotate(168deg); }
-    48%   { left: 42%;  top: 55%;  transform: rotate(200deg); }
-    64%   { left: 24%;  top: 28%;  transform: rotate(172deg); }
-    80%   { left: 6%;   top: 62%;  transform: rotate(190deg); }
-    92%   { left: -6%;  top: 35%;  transform: rotate(178deg); }
-    100%  { left: 105%; top: 10%;  transform: rotate(182deg); }
+    0%    { transform: translate(105vw, 10vh) rotate(182deg); }
+    16%   { transform: translate(82vw,  40vh) rotate(196deg); }
+    32%   { transform: translate(62vw,  15vh) rotate(168deg); }
+    48%   { transform: translate(42vw,  55vh) rotate(200deg); }
+    64%   { transform: translate(24vw,  28vh) rotate(172deg); }
+    80%   { transform: translate(6vw,   62vh) rotate(190deg); }
+    92%   { transform: translate(-6vw,  35vh) rotate(178deg); }
+    100%  { transform: translate(105vw, 10vh) rotate(182deg); }
   }
   @keyframes homeFly3 {
-    0%    { left: -8%;  top: 18%;  transform: rotate(-4deg); }
-    15%   { left: 14%;  top: 50%;  transform: rotate(-18deg); }
-    30%   { left: 32%;  top: 8%;   transform: rotate(6deg); }
-    45%   { left: 50%;  top: 42%;  transform: rotate(-12deg); }
-    60%   { left: 68%;  top: 64%;  transform: rotate(2deg); }
-    75%   { left: 84%;  top: 25%;  transform: rotate(-10deg); }
-    90%   { left: 98%;  top: 55%;  transform: rotate(8deg); }
-    100%  { left: -8%;  top: 18%;  transform: rotate(-4deg); }
+    0%    { transform: translate(-8vw,  18vh) rotate(-4deg); }
+    15%   { transform: translate(14vw,  50vh) rotate(-18deg); }
+    30%   { transform: translate(32vw,  8vh)  rotate(6deg); }
+    45%   { transform: translate(50vw,  42vh) rotate(-12deg); }
+    60%   { transform: translate(68vw,  64vh) rotate(2deg); }
+    75%   { transform: translate(84vw,  25vh) rotate(-10deg); }
+    90%   { transform: translate(98vw,  55vh) rotate(8deg); }
+    100%  { transform: translate(-8vw,  18vh) rotate(-4deg); }
   }
   @keyframes homeFly4 {
-    0%    { left: 105%; top: -2%;  transform: rotate(184deg); }
-    14%   { left: 84%;  top: 30%;  transform: rotate(166deg); }
-    28%   { left: 64%;  top: 55%;  transform: rotate(198deg); }
-    43%   { left: 46%;  top: 20%;  transform: rotate(170deg); }
-    58%   { left: 28%;  top: 60%;  transform: rotate(194deg); }
-    73%   { left: 12%;  top: 32%;  transform: rotate(174deg); }
-    88%   { left: -4%;  top: 50%;  transform: rotate(188deg); }
-    100%  { left: 105%; top: -2%;  transform: rotate(184deg); }
+    0%    { transform: translate(105vw, -2vh) rotate(184deg); }
+    14%   { transform: translate(84vw,  30vh) rotate(166deg); }
+    28%   { transform: translate(64vw,  55vh) rotate(198deg); }
+    43%   { transform: translate(46vw,  20vh) rotate(170deg); }
+    58%   { transform: translate(28vw,  60vh) rotate(194deg); }
+    73%   { transform: translate(12vw,  32vh) rotate(174deg); }
+    88%   { transform: translate(-4vw,  50vh) rotate(188deg); }
+    100%  { transform: translate(105vw, -2vh) rotate(184deg); }
   }
   @keyframes homeFly5 {
-    0%    { left: -8%;  top: 40%;  transform: rotate(-10deg); }
-    16%   { left: 16%;  top: 8%;   transform: rotate(14deg); }
-    32%   { left: 34%;  top: 45%;  transform: rotate(-6deg); }
-    48%   { left: 52%;  top: 65%;  transform: rotate(10deg); }
-    64%   { left: 70%;  top: 24%;  transform: rotate(-14deg); }
-    80%   { left: 88%;  top: 55%;  transform: rotate(4deg); }
-    92%   { left: 100%; top: 12%;  transform: rotate(-8deg); }
-    100%  { left: -8%;  top: 40%;  transform: rotate(-10deg); }
+    0%    { transform: translate(-8vw,  40vh) rotate(-10deg); }
+    16%   { transform: translate(16vw,  8vh)  rotate(14deg); }
+    32%   { transform: translate(34vw,  45vh) rotate(-6deg); }
+    48%   { transform: translate(52vw,  65vh) rotate(10deg); }
+    64%   { transform: translate(70vw,  24vh) rotate(-14deg); }
+    80%   { transform: translate(88vw,  55vh) rotate(4deg); }
+    92%   { transform: translate(100vw, 12vh) rotate(-8deg); }
+    100%  { transform: translate(-8vw,  40vh) rotate(-10deg); }
   }
   @keyframes homeFly6 {
-    0%    { left: 105%; top: 22%;  transform: rotate(178deg); }
-    15%   { left: 86%;  top: 58%;  transform: rotate(192deg); }
-    30%   { left: 66%;  top: 12%;  transform: rotate(166deg); }
-    46%   { left: 48%;  top: 48%;  transform: rotate(200deg); }
-    62%   { left: 30%;  top: 8%;   transform: rotate(172deg); }
-    78%   { left: 12%;  top: 42%;  transform: rotate(188deg); }
-    90%   { left: -6%;  top: 20%;  transform: rotate(180deg); }
-    100%  { left: 105%; top: 22%;  transform: rotate(178deg); }
+    0%    { transform: translate(105vw, 22vh) rotate(178deg); }
+    15%   { transform: translate(86vw,  58vh) rotate(192deg); }
+    30%   { transform: translate(66vw,  12vh) rotate(166deg); }
+    46%   { transform: translate(48vw,  48vh) rotate(200deg); }
+    62%   { transform: translate(30vw,  8vh)  rotate(172deg); }
+    78%   { transform: translate(12vw,  42vh) rotate(188deg); }
+    90%   { transform: translate(-6vw,  20vh) rotate(180deg); }
+    100%  { transform: translate(105vw, 22vh) rotate(178deg); }
   }
   @keyframes homeFly7 {
-    0%    { left: -8%;  top: 55%;  transform: rotate(-6deg); }
-    14%   { left: 14%;  top: 15%;  transform: rotate(16deg); }
-    28%   { left: 32%;  top: 60%;  transform: rotate(-12deg); }
-    44%   { left: 50%;  top: 20%;  transform: rotate(8deg); }
-    60%   { left: 68%;  top: 62%;  transform: rotate(-16deg); }
-    76%   { left: 86%;  top: 18%;  transform: rotate(6deg); }
-    90%   { left: 100%; top: 48%;  transform: rotate(-10deg); }
-    100%  { left: -8%;  top: 55%;  transform: rotate(-6deg); }
+    0%    { transform: translate(-8vw,  55vh) rotate(-6deg); }
+    14%   { transform: translate(14vw,  15vh) rotate(16deg); }
+    28%   { transform: translate(32vw,  60vh) rotate(-12deg); }
+    44%   { transform: translate(50vw,  20vh) rotate(8deg); }
+    60%   { transform: translate(68vw,  62vh) rotate(-16deg); }
+    76%   { transform: translate(86vw,  18vh) rotate(6deg); }
+    90%   { transform: translate(100vw, 48vh) rotate(-10deg); }
+    100%  { transform: translate(-8vw,  55vh) rotate(-6deg); }
   }
   @keyframes homeFly8 {
-    0%    { left: 105%; top: 5%;   transform: rotate(186deg); }
-    16%   { left: 82%;  top: 44%;  transform: rotate(170deg); }
-    32%   { left: 62%;  top: 8%;   transform: rotate(198deg); }
-    48%   { left: 44%;  top: 60%;  transform: rotate(174deg); }
-    64%   { left: 26%;  top: 20%;  transform: rotate(194deg); }
-    80%   { left: 8%;   top: 55%;  transform: rotate(178deg); }
-    92%   { left: -6%;  top: 30%;  transform: rotate(190deg); }
-    100%  { left: 105%; top: 5%;   transform: rotate(186deg); }
+    0%    { transform: translate(105vw, 5vh)  rotate(186deg); }
+    16%   { transform: translate(82vw,  44vh) rotate(170deg); }
+    32%   { transform: translate(62vw,  8vh)  rotate(198deg); }
+    48%   { transform: translate(44vw,  60vh) rotate(174deg); }
+    64%   { transform: translate(26vw,  20vh) rotate(194deg); }
+    80%   { transform: translate(8vw,   55vh) rotate(178deg); }
+    92%   { transform: translate(-6vw,  30vh) rotate(190deg); }
+    100%  { transform: translate(105vw, 5vh)  rotate(186deg); }
   }
   @keyframes homeFly9 {
-    0%    { left: -8%;  top: 10%;  transform: rotate(-14deg); }
-    15%   { left: 18%;  top: 50%;  transform: rotate(8deg); }
-    30%   { left: 36%;  top: 15%;  transform: rotate(-8deg); }
-    46%   { left: 54%;  top: 58%;  transform: rotate(14deg); }
-    62%   { left: 72%;  top: 22%;  transform: rotate(-10deg); }
-    78%   { left: 90%;  top: 62%;  transform: rotate(6deg); }
-    90%   { left: 100%; top: 30%;  transform: rotate(-6deg); }
-    100%  { left: -8%;  top: 10%;  transform: rotate(-14deg); }
+    0%    { transform: translate(-8vw,  10vh) rotate(-14deg); }
+    15%   { transform: translate(18vw,  50vh) rotate(8deg); }
+    30%   { transform: translate(36vw,  15vh) rotate(-8deg); }
+    46%   { transform: translate(54vw,  58vh) rotate(14deg); }
+    62%   { transform: translate(72vw,  22vh) rotate(-10deg); }
+    78%   { transform: translate(90vw,  62vh) rotate(6deg); }
+    90%   { transform: translate(100vw, 30vh) rotate(-6deg); }
+    100%  { transform: translate(-8vw,  10vh) rotate(-14deg); }
   }
   @keyframes homeFly10 {
-    0%    { left: 105%; top: 62%;  transform: rotate(174deg); }
-    14%   { left: 84%;  top: 20%;  transform: rotate(196deg); }
-    30%   { left: 64%;  top: 55%;  transform: rotate(168deg); }
-    46%   { left: 46%;  top: 10%;  transform: rotate(202deg); }
-    62%   { left: 28%;  top: 50%;  transform: rotate(176deg); }
-    78%   { left: 10%;  top: 15%;  transform: rotate(190deg); }
-    92%   { left: -6%;  top: 45%;  transform: rotate(182deg); }
-    100%  { left: 105%; top: 62%;  transform: rotate(174deg); }
+    0%    { transform: translate(105vw, 62vh) rotate(174deg); }
+    14%   { transform: translate(84vw,  20vh) rotate(196deg); }
+    30%   { transform: translate(64vw,  55vh) rotate(168deg); }
+    46%   { transform: translate(46vw,  10vh) rotate(202deg); }
+    62%   { transform: translate(28vw,  50vh) rotate(176deg); }
+    78%   { transform: translate(10vw,  15vh) rotate(190deg); }
+    92%   { transform: translate(-6vw,  45vh) rotate(182deg); }
+    100%  { transform: translate(105vw, 62vh) rotate(174deg); }
   }
 
 
@@ -456,6 +459,9 @@
     overflow-y:auto;
     padding: 6px 8px 40px 8px; z-index: 1;
     transition: padding-top 0.2s ease;
+    contain: layout style;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   #gridWrap.sel-active {
     padding-top: 54px;
@@ -471,12 +477,17 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s;
     animation: popUp 0.3s ease-out;
-    will-change: transform;
+    contain: layout style paint;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 120px;
+    transform: translateZ(0);
   }
-  .cell:hover { transform: scale(1.03); border-color: rgba(255, 182, 193, 0.4); }
+  .cell:hover { transform: scale(1.03) translateZ(0); border-color: rgba(255, 182, 193, 0.4); will-change: transform; }
+  .cell:not(:hover) { will-change: auto; }
   .cell img {
     width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;
     transition: transform 0.3s ease, filter 0.2s ease;
+    decoding: async;
   }
   .cell:hover img { transform: scale(1.08); }
 
@@ -1230,11 +1241,14 @@ const imgObserver = new IntersectionObserver((entries) => {
     if (entry.isIntersecting) {
       const img = entry.target;
       const src = img.dataset.src;
-      if (src) { img.src = src; img.removeAttribute('data-src'); }
+      if (src) {
+        img.src = src;
+        img.removeAttribute('data-src');
+      }
       imgObserver.unobserve(img);
     }
   });
-}, { rootMargin: '300px' });
+}, { root: gridWrap, rootMargin: '200px 0px 400px 0px', threshold: 0 });
 
 const CHECKMARK_SVG = '<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
 
@@ -1245,6 +1259,8 @@ function makeCell(id, p) {
   const img = document.createElement('img');
   img.dataset.src = p.url;
   img.src = '';
+  img.loading = 'lazy';
+  img.decoding = 'async';
   cell.appendChild(img);
   imgObserver.observe(img);
   const check = document.createElement('div');
