@@ -49,7 +49,7 @@
   #pbSettingsBtn:active { transform: translate(-50%, -50%) scale(0.9); background: rgba(255,107,139,0.25); }
 
   /* Flying photo-butterflies on the home screen */
-  #pbFlyingLayer { position: fixed; inset: 0; pointer-events: none; z-index: 4; overflow: visible; }
+  #pbFlyingLayer { position: fixed; inset: 0; pointer-events: none; z-index: 55; overflow: visible; }
   .pb-flying {
     position: absolute;
     width: calc(var(--pb-size, 42px) * 1.3334);
@@ -59,10 +59,32 @@
     filter: drop-shadow(0 8px 16px rgba(0,0,0,0.55));
     will-change: left, top, transform;
   }
-  .pb-wing-layer { position: absolute; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .pb-wing-layer { position: absolute; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; perspective: 220px; }
   .pb-wing { position: absolute; font-size: var(--pb-size, 42px); width: 50%; height: 100%; display: flex; align-items: center; }
-  .pb-wing.pb-left { left: 0; justify-content: flex-end; transform-origin: right center; animation: pbFlapLeft 0.32s ease-in-out infinite alternate; }
-  .pb-wing.pb-right { right: 0; justify-content: flex-start; transform-origin: left center; animation: pbFlapRight 0.32s ease-in-out infinite alternate; }
+  .pb-wing.pb-left { left: 0; justify-content: flex-end; transform-origin: right center; animation: pbFlapLeft var(--flap-dur, 0.32s) ease-in-out infinite alternate; }
+  .pb-wing.pb-right { right: 0; justify-content: flex-start; transform-origin: left center; animation: pbFlapRight var(--flap-dur, 0.32s) ease-in-out infinite alternate; }
+
+  /* Speed controller bar, fixed just under the header */
+  #pbSpeedBar {
+    position: fixed; top: 64px; left: 0; right: 0; height: 34px; z-index: 35;
+    background: rgba(20,12,28,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; gap: 10px; padding: 0 16px;
+    border-bottom: 1px solid rgba(255,182,193,0.1);
+  }
+  .pb-speed-icon { font-size: 13px; flex-shrink: 0; opacity: 0.85; }
+  #pbSpeedSlider {
+    flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px;
+    background: rgba(255,182,193,0.25); outline: none; margin: 0;
+  }
+  #pbSpeedSlider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: linear-gradient(135deg,#ff758c,#ff7eb3); cursor: pointer;
+    box-shadow: 0 0 8px rgba(255,118,140,0.6);
+  }
+  #pbSpeedSlider::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg,#ff758c,#ff7eb3); cursor: pointer;
+  }
   @keyframes pbFlapLeft { 0% { transform: scaleX(1) rotateY(0deg); } 100% { transform: scaleX(0.15) rotateY(75deg); } }
   @keyframes pbFlapRight { 0% { transform: scaleX(1) rotateY(0deg); } 100% { transform: scaleX(0.15) rotateY(-75deg); } }
   .pb-wing-photo { height: var(--pb-size, 42px); width: auto; max-width: none; display: block; object-fit: contain; pointer-events: none; -webkit-user-drag: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
@@ -214,7 +236,7 @@
 
   /* Grid Layout */
   #gridWrap {
-    position:absolute; top:65px; left:0; right:0; bottom:0;
+    position:absolute; top:99px; left:0; right:0; bottom:0;
     overflow-y:auto;
     padding: 6px 8px 40px 8px; z-index: 1;
     transition: padding-top 0.2s ease;
@@ -624,6 +646,12 @@
 
 <!-- Home-screen layer where uploaded photo-butterflies fly -->
 <div id="pbFlyingLayer"></div>
+
+<div id="pbSpeedBar">
+  <span class="pb-speed-icon">🐢</span>
+  <input type="range" id="pbSpeedSlider" min="1" max="20" step="1" value="10">
+  <span class="pb-speed-icon">🐇</span>
+</div>
 
 <!-- Butterfly List Overlay -->
 <div id="pbListOverlay" class="pb-list-overlay">
@@ -1758,12 +1786,28 @@ okDel.addEventListener('click', async () => {
 // ===== Photo-Butterfly System (Firebase-synced) =====
 (function () {
   const MIN_SIZE = 20, MAX_SIZE = 90, DEFAULT_SIZE = 42;
+  const CACHE_KEY = 'zaina_bf_cache_v1';
+  const SPEED_CACHE_KEY = 'zaina_bf_speed_cache_v1';
   const butterfliesRef = db.ref('zaina_butterflies');
+  const speedRef = db.ref('zaina_settings/butterflySpeed');
 
   let pbButterflies = {};   // id -> { left, right, size, order }
   let pbEditingId = null;
   let pbPending = { left: null, right: null };
   let pbPendingSize = DEFAULT_SIZE;
+  let pbSpeedValue = 10;    // 1 (very slow) .. 20 (very fast), synced via Firebase
+
+  const pbSpeedSlider = document.getElementById('pbSpeedSlider');
+
+  // Instant local cache so butterflies appear the moment the app opens,
+  // without waiting for the Firebase round-trip.
+  function loadCache(key) {
+    try { const raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch (e) {}
+    return null;
+  }
+  function saveCache(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
 
   const pbSettingsBtn   = document.getElementById('pbSettingsBtn');
   const pbListOverlay   = document.getElementById('pbListOverlay');
@@ -1962,6 +2006,13 @@ okDel.addEventListener('click', async () => {
     };
   }
 
+  // Butterflies emerge from just under the header, then disperse into the
+  // rest of the home screen on their first flight leg.
+  function headerSpawnPoint() {
+    const w = window.innerWidth;
+    return { x: 24 + Math.random() * Math.max(1, w - 48), y: 22 + Math.random() * 34 };
+  }
+
   function wingHtml(dataUrl) {
     return dataUrl ? `<img src="${dataUrl}" class="pb-wing-photo" alt="wing">` : '🦋';
   }
@@ -1970,7 +2021,7 @@ okDel.addEventListener('click', async () => {
     const el = document.createElement('div');
     el.className = 'pb-flying';
     el.style.setProperty('--pb-size', (entry.size || DEFAULT_SIZE) + 'px');
-    const startPt = randomPoint();
+    const startPt = headerSpawnPoint();
     el.style.left = startPt.x + 'px';
     el.style.top = startPt.y + 'px';
     el.innerHTML =
@@ -1978,6 +2029,15 @@ okDel.addEventListener('click', async () => {
         '<div class="pb-wing pb-left">' + wingHtml(entry.left) + '</div>' +
         '<div class="pb-wing pb-right">' + wingHtml(entry.right) + '</div>' +
       '</div>';
+    // Randomize each butterfly's own flap speed/offset so a whole flock
+    // never flutters in perfect unison — real butterflies don't sync up.
+    const flapDur = (0.26 + Math.random() * 0.16).toFixed(2) + 's';
+    const leftWing = el.querySelector('.pb-left');
+    const rightWing = el.querySelector('.pb-right');
+    leftWing.style.setProperty('--flap-dur', flapDur);
+    leftWing.style.animationDelay = (-Math.random() * 0.4).toFixed(2) + 's';
+    rightWing.style.setProperty('--flap-dur', flapDur);
+    rightWing.style.animationDelay = (-Math.random() * 0.4).toFixed(2) + 's';
     pbFlyingLayer.appendChild(el);
     return el;
   }
@@ -1992,7 +2052,8 @@ okDel.addEventListener('click', async () => {
     const dx = pt.x - curLeft, dy = pt.y - curTop;
     const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
     const dist = Math.hypot(dx, dy);
-    const duration = Math.max(2.2, Math.min(6, dist / 90));
+    const speedFactor = Math.max(0.08, Math.min(2.5, pbSpeedValue / 10));
+    const duration = Math.max(0.6, Math.min(20, (dist / 90) / speedFactor));
     el.style.transition = `left ${duration}s cubic-bezier(0.35,0,0.25,1), top ${duration}s cubic-bezier(0.35,0,0.25,1), transform 0.4s ease-out`;
     el.style.transform = `rotate(${angle}deg)`;
     el.style.left = pt.x + 'px';
@@ -2014,7 +2075,7 @@ okDel.addEventListener('click', async () => {
       if (!pbInstances[entry.id]) {
         const el = createFlyingEl(entry);
         pbInstances[entry.id] = { el, timeout: null };
-        setTimeout(() => flyLoop(entry.id), 300 + idx * 450);
+        setTimeout(() => flyLoop(entry.id), 80 + idx * 120);
       } else {
         const inst = pbInstances[entry.id];
         inst.el.style.setProperty('--pb-size', (entry.size || DEFAULT_SIZE) + 'px');
@@ -2024,26 +2085,59 @@ okDel.addEventListener('click', async () => {
     });
   }
 
+  // ---- Speed controller: synced through Firebase so both devices always
+  // fly at the same, shared speed ----
+  function applySpeedUI(val) {
+    pbSpeedValue = Math.max(1, Math.min(20, parseInt(val) || 10));
+    if (pbSpeedSlider.value != pbSpeedValue) pbSpeedSlider.value = pbSpeedValue;
+  }
+  const cachedSpeed = loadCache(SPEED_CACHE_KEY);
+  if (cachedSpeed) applySpeedUI(cachedSpeed);
+  pbSpeedSlider.addEventListener('input', () => {
+    applySpeedUI(pbSpeedSlider.value);
+    saveCache(SPEED_CACHE_KEY, pbSpeedValue);
+    speedRef.set(pbSpeedValue).catch(() => {});
+  });
+  speedRef.on('value', (snap) => {
+    const v = snap.val();
+    if (v == null) return;
+    applySpeedUI(v);
+    saveCache(SPEED_CACHE_KEY, pbSpeedValue);
+  });
+
   // ---- Firebase real-time sync: every device (yours + your friend's) sees
-  // the same butterfly list and the same animated butterflies live ----
+  // the same butterfly list and the same animated butterflies live.
+  // A local cache is rendered first so butterflies appear instantly when
+  // the app opens, instead of waiting on the network round-trip. ----
+  const cachedButterflies = loadCache(CACHE_KEY);
+  if (cachedButterflies) {
+    pbButterflies = cachedButterflies;
+    renderPbList();
+    syncFlyingButterflies();
+  }
+
   butterfliesRef.once('value', (snap) => {
     pbButterflies = snap.val() || {};
+    saveCache(CACHE_KEY, pbButterflies);
     renderPbList();
     syncFlyingButterflies();
 
     butterfliesRef.on('child_added', (s) => {
       if (pbButterflies[s.key]) return;
       pbButterflies[s.key] = s.val();
+      saveCache(CACHE_KEY, pbButterflies);
       if (pbListOverlay.classList.contains('show')) renderPbList();
       syncFlyingButterflies();
     });
     butterfliesRef.on('child_changed', (s) => {
       pbButterflies[s.key] = s.val();
+      saveCache(CACHE_KEY, pbButterflies);
       if (pbListOverlay.classList.contains('show')) renderPbList();
       syncFlyingButterflies();
     });
     butterfliesRef.on('child_removed', (s) => {
       delete pbButterflies[s.key];
+      saveCache(CACHE_KEY, pbButterflies);
       if (pbListOverlay.classList.contains('show')) renderPbList();
       syncFlyingButterflies();
     });
