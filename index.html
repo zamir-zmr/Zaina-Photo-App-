@@ -1791,6 +1791,26 @@ okDel.addEventListener('click', async () => {
       .sort((a, b) => (a.order || 0) - (b.order || 0));
   }
 
+  // PNG-based resize that keeps the alpha channel (JPEG has no transparency
+  // and would bake a black background onto the butterfly cutout).
+  function resizeKeepAlpha(file, maxPx, cb) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if (w > h) { if (w > maxPx) { h = Math.round(h * maxPx / w); w = maxPx; } }
+        else { if (h > maxPx) { w = Math.round(w * maxPx / h); h = maxPx; } }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        cb(c.toDataURL('image/png'));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
   function splitFullImage(dataUrl, cb) {
     const img = new Image();
     img.onload = () => {
@@ -1803,7 +1823,7 @@ okDel.addEventListener('click', async () => {
       const rightCanvas = document.createElement('canvas');
       rightCanvas.width = rightW; rightCanvas.height = h;
       rightCanvas.getContext('2d').drawImage(img, halfW, 0, rightW, h, 0, 0, rightW, h);
-      cb(leftCanvas.toDataURL('image/jpeg', 0.8), rightCanvas.toDataURL('image/jpeg', 0.8));
+      cb(leftCanvas.toDataURL('image/png'), rightCanvas.toDataURL('image/png'));
     };
     img.src = dataUrl;
   }
@@ -1813,7 +1833,7 @@ okDel.addEventListener('click', async () => {
     const file = e.target.files[0];
     if (!file) return;
     pbFullContent.innerHTML = '⏳ Processing…';
-    compressImage(file).then((dataUrl) => {
+    resizeKeepAlpha(file, 800, (dataUrl) => {
       splitFullImage(dataUrl, (l, r) => {
         pbPending.left = l;
         pbPending.right = r;
