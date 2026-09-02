@@ -38,799 +38,129 @@
   #rightControls { position: relative; z-index: 2; }
   #addBtn { position: relative; z-index: 1; }
 
-  /* HOME SCREEN BUTTERFLY LAYER — a single full-viewport-fixed field that runs from
-     just above the header down through the entire home screen. It is NOT clipped at
-     the header boundary: butterflies simply pass behind the header's own background
-     as they cross it, then continue flying straight into the home screen below,
-     so they never disappear or get cut off — always several airborne.
-     LANES: the 20 butterflies (10 header + 10 home) are each locked to their own
-     5vh-tall horizontal lane spanning the full screen height, alternating between
-     the two fields, so their vertical ranges never overlap and they can't touch —
-     each also has its own flutter (wing-flap + bob) timing so none of them are in sync. */
-  .home-butterfly-field {
-    position: fixed; inset: 0;
-    overflow: visible;
-    pointer-events: none;
-    z-index: 5;
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
-    contain: layout style;
+  /* ===== Photo-Butterfly System ===== */
+  #pbSettingsBtn {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,182,193,0.3);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 3;
   }
-  .home-flying-butterfly {
-    position: fixed;
-    left: 0%; top: 0%;
+  #pbSettingsBtn:active { transform: translate(-50%, -50%) scale(0.9); background: rgba(255,107,139,0.25); }
+
+  /* Flying photo-butterflies on the home screen */
+  #pbFlyingLayer { position: fixed; inset: 0; pointer-events: none; z-index: 4; overflow: visible; }
+  .pb-flying {
+    position: absolute;
+    width: calc(var(--pb-size, 42px) * 1.3334);
+    height: calc(var(--pb-size, 42px) * 1.3334);
+    display: flex; align-items: center; justify-content: center;
     transform-origin: center center;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-    animation-play-state: running !important;
-    will-change: transform;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.55));
+    will-change: left, top, transform;
   }
-  .home-flying-butterfly .bob {
-    width: 100%; height: 100%;
-  }
+  .pb-wing-layer { position: absolute; width: 100%; height: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .pb-wing { position: absolute; font-size: var(--pb-size, 42px); width: 50%; height: 100%; display: flex; align-items: center; }
+  .pb-wing.pb-left { left: 0; justify-content: flex-end; transform-origin: right center; animation: pbFlapLeft 0.32s ease-in-out infinite alternate; }
+  .pb-wing.pb-right { right: 0; justify-content: flex-start; transform-origin: left center; animation: pbFlapRight 0.32s ease-in-out infinite alternate; }
+  @keyframes pbFlapLeft { 0% { transform: scaleX(1) rotateY(0deg); } 100% { transform: scaleX(0.15) rotateY(75deg); } }
+  @keyframes pbFlapRight { 0% { transform: scaleX(1) rotateY(0deg); } 100% { transform: scaleX(0.15) rotateY(-75deg); } }
+  .pb-wing-photo { height: var(--pb-size, 42px); width: auto; max-width: none; display: block; object-fit: contain; pointer-events: none; -webkit-user-drag: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 
-  .hbf1 { width: 46px; height: 46px; animation-name: homeFly1; animation-duration: 20s; animation-delay: 0s; }
-  .hbf1 .bob { animation: bobFlutter1h 1.5s infinite ease-in-out; animation-delay: 0.1s; }
-  .hbf2 { width: 40px; height: 40px; animation-name: homeFly2; animation-duration: 24s; animation-delay: 3s; }
-  .hbf2 .bob { animation: bobFlutter2h 1.8s infinite ease-in-out; animation-delay: 0.3s; }
-  .hbf3 { width: 52px; height: 52px; animation-name: homeFly3; animation-duration: 22s; animation-delay: 6s; }
-  .hbf3 .bob { animation: bobFlutter3h 2.1s infinite ease-in-out; animation-delay: 0.0s; }
-  .hbf4 { width: 38px; height: 38px; animation-name: homeFly4; animation-duration: 18s; animation-delay: 1.5s; }
-  .hbf4 .bob { animation: bobFlutter4h 1.65s infinite ease-in-out; animation-delay: 0.4s; }
-  .hbf5 { width: 44px; height: 44px; animation-name: homeFly5; animation-duration: 26s; animation-delay: 4.5s; }
-  .hbf5 .bob { animation: bobFlutter5h 1.95s infinite ease-in-out; animation-delay: 0.2s; }
-  .hbf6 { width: 42px; height: 42px; animation-name: homeFly6; animation-duration: 21s; animation-delay: 2s; }
-  .hbf6 .bob { animation: bobFlutter6h 1.4s infinite ease-in-out; animation-delay: 0.35s; }
-  .hbf7 { width: 48px; height: 48px; animation-name: homeFly7; animation-duration: 25s; animation-delay: 5s; }
-  .hbf7 .bob { animation: bobFlutter7h 2.2s infinite ease-in-out; animation-delay: 0.05s; }
-  .hbf8 { width: 36px; height: 36px; animation-name: homeFly8; animation-duration: 19s; animation-delay: 7.5s; }
-  .hbf8 .bob { animation: bobFlutter8h 1.7s infinite ease-in-out; animation-delay: 0.15s; }
-  .hbf9 { width: 50px; height: 50px; animation-name: homeFly9; animation-duration: 23s; animation-delay: 8.5s; }
-  .hbf9 .bob { animation: bobFlutter9h 2.0s infinite ease-in-out; animation-delay: 0.45s; }
-  .hbf10 { width: 40px; height: 40px; animation-name: homeFly10; animation-duration: 27s; animation-delay: 10s; }
-  .hbf10 .bob { animation: bobFlutter10h 1.6s infinite ease-in-out; animation-delay: 0.25s; }
+  /* Butterfly List overlay (cyan "Word Layout" style) */
+  .pb-list-overlay {
+    display: none; position: fixed; inset: 0; z-index: 400;
+    background: #b2ebf2; flex-direction: column; overflow: hidden;
+  }
+  .pb-list-overlay.show { display: flex; }
+  .pb-list-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #00bcd4; padding: 14px 16px; flex-shrink: 0;
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+  .pb-list-title { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; color: #fff; letter-spacing: 2px; }
+  .pb-list-close { background: none; border: none; cursor: pointer; font-size: 22px; color: #fff; font-weight: 700; line-height: 1; padding: 0 4px; }
+  .pb-list-addrow { padding: 14px 14px 10px; flex-shrink: 0; background: #b2ebf2; }
+  .pb-list-addbtn {
+    width: 100%; background: #00bcd4; color: #fff; border: none; border-radius: 10px;
+    padding: 12px 16px; font-size: 14px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer;
+  }
+  .pb-list-body {
+    flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: 4px 14px 20px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .pb-row {
+    display: flex; align-items: center; gap: 10px; background: #fff;
+    border: 2px solid #00bcd4; border-radius: 14px; padding: 10px 14px;
+  }
+  .pb-row-thumb {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    background: #e0f7fa; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; overflow: hidden;
+  }
+  .pb-row-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .pb-row-label { flex: 1; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 600; color: #00838f; }
+  .pb-row-btn { background: none; border: none; cursor: pointer; font-size: 19px; padding: 0 4px; flex-shrink: 0; }
 
-  /* homeFly — GPU-only transform, no left/top layout cost. Each stays inside its own lane. */
-  @keyframes homeFly1 {
-    0%   { transform: translate(-10.0vw, 7.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 7.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 8.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 7.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 7.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 7.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 7.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 7.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly2 {
-    0%   { transform: translate(105.0vw, 17.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 17.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 18.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 17.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 17.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 17.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 17.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 17.5vh) rotate(180deg); }
-  }
-  @keyframes homeFly3 {
-    0%   { transform: translate(-10.0vw, 27.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 27.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 28.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 27.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 27.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 27.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 27.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 27.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly4 {
-    0%   { transform: translate(105.0vw, 37.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 37.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 38.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 37.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 37.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 37.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 37.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 37.5vh) rotate(180deg); }
-  }
-  @keyframes homeFly5 {
-    0%   { transform: translate(-10.0vw, 47.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 47.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 48.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 47.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 47.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 47.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 47.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 47.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly6 {
-    0%   { transform: translate(105.0vw, 57.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 57.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 58.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 57.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 57.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 57.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 57.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 57.5vh) rotate(180deg); }
-  }
-  @keyframes homeFly7 {
-    0%   { transform: translate(-10.0vw, 67.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 67.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 68.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 67.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 67.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 67.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 67.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 67.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly8 {
-    0%   { transform: translate(105.0vw, 77.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 77.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 78.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 77.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 77.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 77.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 77.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 77.5vh) rotate(180deg); }
-  }
-  @keyframes homeFly9 {
-    0%   { transform: translate(-10.0vw, 87.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 87.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 88.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 87.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 87.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 87.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 87.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 87.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly10 {
-    0%   { transform: translate(105.0vw, 97.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 97.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 98.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 97.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 97.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 97.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 97.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 97.5vh) rotate(180deg); }
-  }
-
-  @keyframes bobFlutter1h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter2h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter3h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter4h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter5h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter6h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter7h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter8h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter9h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter10h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-
-  /* MULTI-BUTTERFLY FIELD — 10 more butterflies, each in its own lane (interleaved
-     with the home field's lanes above), each with unique flutter timing. */
-  .butterfly-field {
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    overflow: visible;
-    pointer-events: none;
-    z-index: 60;
-    transform: translateZ(0);
-    will-change: transform;
-    isolation: isolate;
-    contain: layout style;
-  }
-  .flying-butterfly {
-    position: fixed;
-    left: 0%; top: 0%;
-    transform-origin: center center;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-    animation-play-state: running !important;
-    will-change: transform;
-    backface-visibility: hidden;
-    transform: translateZ(0);
-  }
-  .flying-butterfly .bob {
-    width: 100%; height: 100%;
-  }
-
-  .bf1  { width: 34px; height: 34px; animation-name: flyPath1; animation-duration: 12s; animation-delay: 0s; }
-  .bf1 .bob { animation: bobFlutter1 1.3s infinite ease-in-out; animation-delay: 0s; }
-  .bf2  { width: 28px; height: 28px; animation-name: flyPath2; animation-duration: 14s; animation-delay: 1.5s; }
-  .bf2 .bob { animation: bobFlutter2 1.6s infinite ease-in-out; animation-delay: 0.2s; }
-  .bf3  { width: 38px; height: 38px; animation-name: flyPath3; animation-duration: 16s; animation-delay: 3s; }
-  .bf3 .bob { animation: bobFlutter3 1.9s infinite ease-in-out; animation-delay: 0.05s; }
-  .bf4  { width: 26px; height: 26px; animation-name: flyPath4; animation-duration: 11s; animation-delay: 0.8s; }
-  .bf4 .bob { animation: bobFlutter4 1.45s infinite ease-in-out; animation-delay: 0.35s; }
-  .bf5  { width: 32px; height: 32px; animation-name: flyPath5; animation-duration: 15s; animation-delay: 4s; }
-  .bf5 .bob { animation: bobFlutter5 1.75s infinite ease-in-out; animation-delay: 0.15s; }
-  .bf6  { width: 36px; height: 36px; animation-name: flyPath6; animation-duration: 13s; animation-delay: 2.2s; }
-  .bf6 .bob { animation: bobFlutter6 1.35s infinite ease-in-out; animation-delay: 0.4s; }
-  .bf7  { width: 24px; height: 24px; animation-name: flyPath7; animation-duration: 17s; animation-delay: 5s; }
-  .bf7 .bob { animation: bobFlutter7 2.05s infinite ease-in-out; animation-delay: 0.1s; }
-  .bf8  { width: 30px; height: 30px; animation-name: flyPath8; animation-duration: 12.5s; animation-delay: 1s; }
-  .bf8 .bob { animation: bobFlutter8 1.55s infinite ease-in-out; animation-delay: 0.3s; }
-  .bf9  { width: 27px; height: 27px; animation-name: flyPath9; animation-duration: 18s; animation-delay: 3.6s; }
-  .bf9 .bob { animation: bobFlutter9 1.85s infinite ease-in-out; animation-delay: 0.0s; }
-  .bf10  { width: 33px; height: 33px; animation-name: flyPath10; animation-duration: 14.5s; animation-delay: 2.8s; }
-  .bf10 .bob { animation: bobFlutter10 1.25s infinite ease-in-out; animation-delay: 0.25s; }
-
-  /* Each path loops seamlessly (0% and 100% match), locked to its own 5vh lane —
-     lanes never overlap, so butterflies from either field can never touch. */
-  @keyframes flyPath1 {
-    0%   { transform: translate(105.0vw, 2.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 2.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 3.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 2.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 2.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 2.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 2.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 2.5vh) rotate(180deg); }
-  }
-  @keyframes flyPath2 {
-    0%   { transform: translate(-10.0vw, 12.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 12.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 13.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 12.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 12.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 12.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 12.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 12.5vh) rotate(-6deg); }
-  }
-  @keyframes flyPath3 {
-    0%   { transform: translate(105.0vw, 22.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 22.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 23.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 22.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 22.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 22.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 22.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 22.5vh) rotate(180deg); }
-  }
-  @keyframes flyPath4 {
-    0%   { transform: translate(-10.0vw, 32.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 32.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 33.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 32.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 32.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 32.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 32.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 32.5vh) rotate(-6deg); }
-  }
-  @keyframes flyPath5 {
-    0%   { transform: translate(105.0vw, 42.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 42.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 43.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 42.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 42.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 42.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 42.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 42.5vh) rotate(180deg); }
-  }
-  @keyframes flyPath6 {
-    0%   { transform: translate(-10.0vw, 52.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 52.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 53.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 52.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 52.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 52.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 52.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 52.5vh) rotate(-6deg); }
-  }
-  @keyframes flyPath7 {
-    0%   { transform: translate(105.0vw, 62.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 62.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 63.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 62.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 62.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 62.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 62.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 62.5vh) rotate(180deg); }
-  }
-  @keyframes flyPath8 {
-    0%   { transform: translate(-10.0vw, 72.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 72.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 73.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 72.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 72.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 72.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 72.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 72.5vh) rotate(-6deg); }
-  }
-  @keyframes flyPath9 {
-    0%   { transform: translate(105.0vw, 82.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 82.85vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 83.0vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 82.65vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 82.35vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 82.0vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 82.15vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 82.5vh) rotate(180deg); }
-  }
-  @keyframes flyPath10 {
-    0%   { transform: translate(-10.0vw, 92.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 92.85vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 93.0vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 92.65vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 92.35vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 92.0vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 92.15vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 92.5vh) rotate(-6deg); }
-  }
-
-  @keyframes bobFlutter1 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter2 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter3 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter4 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter5 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter6 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter7 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter8 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter9 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter10 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-
-  /* SMALL TOP BUTTERFLY (kept for empty-state icon reuse) */
-  .top-flower {
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    cursor: pointer;
-    animation: customPathMotion 4s infinite cubic-bezier(0.25, 1, 0.5, 1);
-    transform-origin: center;
-    will-change: transform;
-  }
-
-  .butterfly-svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    perspective: 220px;
-    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(255,140,180,0.4)) saturate(1.25) contrast(1.08);
-  }
-  .wing {
-    transform-box: fill-box;
-    transform-style: preserve-3d;
-    backface-visibility: visible;
-  }
-  .wing path {
-    stroke: rgba(20, 6, 14, 0.4);
-    stroke-width: 0.7;
-    stroke-linejoin: round;
-    paint-order: fill;
-  }
-  .wing-left {
-    transform-origin: right center;
-    animation: flapLeft3D 0.42s infinite cubic-bezier(0.45, 0, 0.4, 1);
-  }
-  .wing-right {
-    transform-origin: left center;
-    animation: flapRight3D 0.42s infinite cubic-bezier(0.45, 0, 0.4, 1);
-  }
-  /* Real wings don't just shrink — they fold up in 3D like a book closing,
-     fast on the downbeat and easing gently back open */
-  @keyframes flapLeft3D {
-    0%   { transform: rotateY(0deg) rotateZ(2deg) scaleY(1); }
-    38%  { transform: rotateY(78deg) rotateZ(6deg) scaleY(0.96); }
-    50%  { transform: rotateY(92deg) rotateZ(8deg) scaleY(0.94); }
-    65%  { transform: rotateY(55deg) rotateZ(4deg) scaleY(0.97); }
-    100% { transform: rotateY(0deg) rotateZ(2deg) scaleY(1); }
-  }
-  @keyframes flapRight3D {
-    0%   { transform: rotateY(0deg) rotateZ(-2deg) scaleY(1); }
-    38%  { transform: rotateY(-78deg) rotateZ(-6deg) scaleY(0.96); }
-    50%  { transform: rotateY(-92deg) rotateZ(-8deg) scaleY(0.94); }
-    65%  { transform: rotateY(-55deg) rotateZ(-4deg) scaleY(0.97); }
-    100% { transform: rotateY(0deg) rotateZ(-2deg) scaleY(1); }
-  }
-  /* Every butterfly gets its own wing-flap speed — none of them flap in sync */
-  .bf1 .wing-left, .bf1 .wing-right { animation-duration: 0.4s; }
-  .bf2 .wing-left, .bf2 .wing-right { animation-duration: 0.48s; }
-  .bf3 .wing-left, .bf3 .wing-right { animation-duration: 0.34s; }
-  .bf4 .wing-left, .bf4 .wing-right { animation-duration: 0.44s; }
-  .bf5 .wing-left, .bf5 .wing-right { animation-duration: 0.52s; }
-  .bf6 .wing-left, .bf6 .wing-right { animation-duration: 0.38s; }
-  .bf7 .wing-left, .bf7 .wing-right { animation-duration: 0.3s; }
-  .bf8 .wing-left, .bf8 .wing-right { animation-duration: 0.46s; }
-  .bf9 .wing-left, .bf9 .wing-right { animation-duration: 0.42s; }
-  .bf10 .wing-left, .bf10 .wing-right { animation-duration: 0.36s; }
-  .hbf1 .wing-left, .hbf1 .wing-right { animation-duration: 0.42s; }
-  .hbf2 .wing-left, .hbf2 .wing-right { animation-duration: 0.5s; }
-  .hbf3 .wing-left, .hbf3 .wing-right { animation-duration: 0.32s; }
-  .hbf4 .wing-left, .hbf4 .wing-right { animation-duration: 0.46s; }
-  .hbf5 .wing-left, .hbf5 .wing-right { animation-duration: 0.54s; }
-  .hbf6 .wing-left, .hbf6 .wing-right { animation-duration: 0.36s; }
-  .hbf7 .wing-left, .hbf7 .wing-right { animation-duration: 0.28s; }
-  .hbf8 .wing-left, .hbf8 .wing-right { animation-duration: 0.48s; }
-  .hbf9 .wing-left, .hbf9 .wing-right { animation-duration: 0.4s; }
-  .hbf10 .wing-left, .hbf10 .wing-right { animation-duration: 0.34s; }
-
-  /* HEADER-ONLY BUTTERFLY FIELD — these stay strictly inside the 64px header band
-     (fixed px range, so it's exact regardless of screen height) — this is what
-     actually roams the header itself, separate from the page-wide fields above. */
-  .header-butterfly-field {
-    position: fixed; top: 0; left: 0; right: 0; height: 64px;
-    overflow: visible;
-    pointer-events: none;
-    z-index: 60;
-    isolation: isolate;
-  }
-  .header-flying-butterfly {
-    position: fixed;
-    left: 0%; top: 0%;
-    transform-origin: center center;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-    animation-play-state: running !important;
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-  .header-flying-butterfly .bob { width: 100%; height: 100%; }
-
-  .hdrbf1 { width: 15px; height: 15px; animation-name: headerFly1; animation-duration: 9s; animation-delay: 0s; }
-  .hdrbf1 .bob { animation: bobFlutterHdr1 1.3s infinite ease-in-out; animation-delay: 0.05s; }
-  .hdrbf1 .wing-left, .hdrbf1 .wing-right { animation-duration: 0.38s; }
-  .hdrbf2 { width: 17px; height: 17px; animation-name: headerFly2; animation-duration: 11s; animation-delay: 1.3s; }
-  .hdrbf2 .bob { animation: bobFlutterHdr2 1.6s infinite ease-in-out; animation-delay: 0.2s; }
-  .hdrbf2 .wing-left, .hdrbf2 .wing-right { animation-duration: 0.44s; }
-  .hdrbf3 { width: 14px; height: 14px; animation-name: headerFly3; animation-duration: 8.5s; animation-delay: 2.6s; }
-  .hdrbf3 .bob { animation: bobFlutterHdr3 1.45s infinite ease-in-out; animation-delay: 0.1s; }
-  .hdrbf3 .wing-left, .hdrbf3 .wing-right { animation-duration: 0.34s; }
-  .hdrbf4 { width: 18px; height: 18px; animation-name: headerFly4; animation-duration: 12s; animation-delay: 0.6s; }
-  .hdrbf4 .bob { animation: bobFlutterHdr4 1.75s infinite ease-in-out; animation-delay: 0.3s; }
-  .hdrbf4 .wing-left, .hdrbf4 .wing-right { animation-duration: 0.48s; }
-  .hdrbf5 { width: 13px; height: 13px; animation-name: headerFly5; animation-duration: 10s; animation-delay: 1.9s; }
-  .hdrbf5 .bob { animation: bobFlutterHdr5 1.35s infinite ease-in-out; animation-delay: 0.15s; }
-  .hdrbf5 .wing-left, .hdrbf5 .wing-right { animation-duration: 0.3s; }
-
-  /* Confined to the header's own 64px band (px-based, not vh) — always visibly inside it */
-  @keyframes headerFly1 {
-    0%   { transform: translate(-10.0vw, 6px) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 9.5px) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 11.0px) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 7.5px) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 4.5px) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 1.0px) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 2.5px) rotate(4deg); }
-    100% { transform: translate(105.0vw, 6px) rotate(-6deg); }
-  }
-  @keyframes headerFly2 {
-    0%   { transform: translate(105.0vw, 17px) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 20.5px) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 22.0px) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 18.5px) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 15.5px) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 12.0px) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 13.5px) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 17px) rotate(180deg); }
-  }
-  @keyframes headerFly3 {
-    0%   { transform: translate(-10.0vw, 28px) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 31.5px) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 33.0px) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 29.5px) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 26.5px) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 23.0px) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 24.5px) rotate(4deg); }
-    100% { transform: translate(105.0vw, 28px) rotate(-6deg); }
-  }
-  @keyframes headerFly4 {
-    0%   { transform: translate(105.0vw, 39px) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 42.5px) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 44.0px) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 40.5px) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 37.5px) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 34.0px) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 35.5px) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 39px) rotate(180deg); }
-  }
-  @keyframes headerFly5 {
-    0%   { transform: translate(-10.0vw, 50px) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 53.5px) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 55.0px) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 51.5px) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 48.5px) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 45.0px) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 46.5px) rotate(4deg); }
-    100% { transform: translate(105.0vw, 50px) rotate(-6deg); }
-  }
-  @keyframes bobFlutterHdr1 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-2px) rotate(-4deg); }
-    50%  { transform: translateY(2px) rotate(4deg); }
-    75%  { transform: translateY(-1px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutterHdr2 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-2px) rotate(-4deg); }
-    50%  { transform: translateY(2px) rotate(4deg); }
-    75%  { transform: translateY(-1px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutterHdr3 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-2px) rotate(-4deg); }
-    50%  { transform: translateY(2px) rotate(4deg); }
-    75%  { transform: translateY(-1px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutterHdr4 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-2px) rotate(-4deg); }
-    50%  { transform: translateY(2px) rotate(4deg); }
-    75%  { transform: translateY(-1px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutterHdr5 {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-2px) rotate(-4deg); }
-    50%  { transform: translateY(2px) rotate(4deg); }
-    75%  { transform: translateY(-1px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-
-  /* 7 EXTRA home-screen butterflies sharing lanes with hbf1-7, travelling the opposite
-     direction and offset in time so they don't ride together with their lane-mate. */
-  .hbf11 { width: 42px; height: 42px; animation-name: homeFly11; animation-duration: 23s; animation-delay: 10s; }
-  .hbf11 .bob { animation: bobFlutter11h 1.55s infinite ease-in-out; animation-delay: 0.12s; }
-  .hbf11 .wing-left, .hbf11 .wing-right { animation-duration: 0.41s; }
-  .hbf12 { width: 37px; height: 37px; animation-name: homeFly12; animation-duration: 27s; animation-delay: 14.5s; }
-  .hbf12 .bob { animation: bobFlutter12h 1.85s infinite ease-in-out; animation-delay: 0.22s; }
-  .hbf12 .wing-left, .hbf12 .wing-right { animation-duration: 0.47s; }
-  .hbf13 { width: 49px; height: 49px; animation-name: homeFly13; animation-duration: 25s; animation-delay: 17s; }
-  .hbf13 .bob { animation: bobFlutter13h 1.35s infinite ease-in-out; animation-delay: 0.02s; }
-  .hbf13 .wing-left, .hbf13 .wing-right { animation-duration: 0.31s; }
-  .hbf14 { width: 35px; height: 35px; animation-name: homeFly14; animation-duration: 21s; animation-delay: 8s; }
-  .hbf14 .bob { animation: bobFlutter14h 1.65s infinite ease-in-out; animation-delay: 0.32s; }
-  .hbf14 .wing-left, .hbf14 .wing-right { animation-duration: 0.45s; }
-  .hbf15 { width: 45px; height: 45px; animation-name: homeFly15; animation-duration: 29s; animation-delay: 19s; }
-  .hbf15 .bob { animation: bobFlutter15h 1.95s infinite ease-in-out; animation-delay: 0.18s; }
-  .hbf15 .wing-left, .hbf15 .wing-right { animation-duration: 0.53s; }
-  .hbf16 { width: 39px; height: 39px; animation-name: homeFly16; animation-duration: 24s; animation-delay: 11s; }
-  .hbf16 .bob { animation: bobFlutter16h 1.42s infinite ease-in-out; animation-delay: 0.28s; }
-  .hbf16 .wing-left, .hbf16 .wing-right { animation-duration: 0.37s; }
-  .hbf17 { width: 46px; height: 46px; animation-name: homeFly17; animation-duration: 28s; animation-delay: 15.5s; }
-  .hbf17 .bob { animation: bobFlutter17h 1.72s infinite ease-in-out; animation-delay: 0.08s; }
-  .hbf17 .wing-left, .hbf17 .wing-right { animation-duration: 0.49s; }
-
-  @keyframes homeFly11 {
-    0%   { transform: translate(105.0vw, 7.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 8.62vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 9.1vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 7.98vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 7.02vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 5.9vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 6.38vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 7.5vh) rotate(180deg); }
-  }
-  @keyframes homeFly12 {
-    0%   { transform: translate(-10.0vw, 17.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 18.62vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 19.1vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 17.98vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 17.02vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 15.9vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 16.38vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 17.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly13 {
-    0%   { transform: translate(105.0vw, 27.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 28.62vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 29.1vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 27.98vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 27.02vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 25.9vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 26.38vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 27.5vh) rotate(180deg); }
-  }
-  @keyframes homeFly14 {
-    0%   { transform: translate(-10.0vw, 37.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 38.62vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 39.1vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 37.98vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 37.02vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 35.9vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 36.38vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 37.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly15 {
-    0%   { transform: translate(105.0vw, 47.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 48.62vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 49.1vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 47.98vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 47.02vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 45.9vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 46.38vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 47.5vh) rotate(180deg); }
-  }
-  @keyframes homeFly16 {
-    0%   { transform: translate(-10.0vw, 57.5vh) rotate(-6deg); }
-    13%  { transform: translate(5.0vw, 58.62vh) rotate(10deg); }
-    27%  { transform: translate(21.1vw, 59.1vh) rotate(-4deg); }
-    40%  { transform: translate(36.0vw, 57.98vh) rotate(-14deg); }
-    55%  { transform: translate(53.3vw, 57.02vh) rotate(8deg); }
-    68%  { transform: translate(68.2vw, 55.9vh) rotate(-10deg); }
-    82%  { transform: translate(84.3vw, 56.38vh) rotate(4deg); }
-    100% { transform: translate(105.0vw, 57.5vh) rotate(-6deg); }
-  }
-  @keyframes homeFly17 {
-    0%   { transform: translate(105.0vw, 67.5vh) rotate(180deg); }
-    13%  { transform: translate(90.0vw, 68.62vh) rotate(196deg); }
-    27%  { transform: translate(74.0vw, 69.1vh) rotate(168deg); }
-    40%  { transform: translate(59.0vw, 67.98vh) rotate(200deg); }
-    55%  { transform: translate(41.7vw, 67.02vh) rotate(172deg); }
-    68%  { transform: translate(26.8vw, 65.9vh) rotate(190deg); }
-    82%  { transform: translate(10.7vw, 66.38vh) rotate(176deg); }
-    100% { transform: translate(-10.0vw, 67.5vh) rotate(180deg); }
-  }
-  @keyframes bobFlutter11h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter12h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter13h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter14h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter15h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter16h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
-  @keyframes bobFlutter17h {
-    0%   { transform: translateY(0) rotate(0deg); }
-    25%  { transform: translateY(-3px) rotate(-4deg); }
-    50%  { transform: translateY(3px) rotate(4deg); }
-    75%  { transform: translateY(-2px) rotate(-2deg); }
-    100% { transform: translateY(0) rotate(0deg); }
-  }
+  /* Modify Butterfly overlay (dark upload modal) */
+  .pb-modify-overlay {
+    position: fixed; inset: 0; z-index: 410; background: rgba(3,1,8,0.9);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.35s ease; padding: 24px;
+  }
+  .pb-modify-overlay.show { opacity: 1; pointer-events: auto; }
+  .pb-modify-card {
+    background: rgba(255,255,255,0.06); backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,182,193,0.35); border-radius: 26px;
+    padding: 26px 22px 22px; max-width: 320px; width: 100%; text-align: center;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.8);
+    transform: translateY(14px) scale(0.96); transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  .pb-modify-overlay.show .pb-modify-card { transform: translateY(0) scale(1); }
+  .pb-modify-icon { font-size: 30px; margin-bottom: 6px; display: block; }
+  .pb-modify-heading { font-family: 'Poppins', sans-serif; color: #ffb6c1; margin: 0 0 16px; font-size: 15px; letter-spacing: 0.5px; }
+  .pb-wing-heading { font-family: 'Poppins', sans-serif; color: #fff; margin: 0 0 12px; font-size: 13px; font-weight: 600; }
+  .pb-full-upload-section { width: 100%; margin-bottom: 16px; }
+  .pb-full-upload-box {
+    display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+    padding: 12px 14px; border: 2px dashed rgba(255,215,0,0.5); border-radius: 14px;
+    background: rgba(255,215,0,0.08); color: #ffd700; font-size: 14px; font-weight: 600;
+    cursor: pointer; text-align: center; transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .pb-full-upload-box:active { border-color: #ffd700; background: rgba(255,215,0,0.15); }
+  .pb-full-upload-box .pb-full-thumb { width: 30px; height: 30px; object-fit: cover; border-radius: 8px; vertical-align: middle; margin-right: 6px; }
+  .pb-wing-slots { display: flex; gap: 6px; justify-content: center; margin-bottom: 18px; }
+  .pb-wing-slot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .pb-upload-box {
+    width: 94px; height: 140px; border: 2px dashed rgba(255,182,193,0.4); border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 26px;
+    overflow: hidden; background: rgba(255,255,255,0.05); color: #ffb6c1;
+  }
+  .pb-upload-box img { width: 100%; height: 100%; object-fit: cover; }
+  .pb-slot-label { font-size: 11px; color: #cbb; letter-spacing: 0.5px; }
+  .pb-size-control { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 20px; }
+  .pb-size-row { display: flex; align-items: center; gap: 10px; }
+  .pb-size-btn {
+    width: 36px; height: 36px; border-radius: 12px; border: 1px solid rgba(255,182,193,0.35);
+    background: rgba(255,255,255,0.06); color: #fff; font-size: 20px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .pb-size-btn:active { transform: scale(0.9); background: rgba(255,107,139,0.25); }
+  .pb-size-input {
+    width: 64px; text-align: center; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,182,193,0.3); border-radius: 12px; padding: 8px 4px;
+    color: #fff; font-size: 14px; font-family: 'Poppins', sans-serif; outline: none;
+  }
+  .pb-modify-actions { display: flex; flex-direction: column; gap: 10px; }
+  .pb-btn {
+    border: none; border-radius: 20px; padding: 10px 28px; cursor: pointer;
+    letter-spacing: 0.5px; font-size: 13px; width: 100%; font-family: 'Poppins', sans-serif; font-weight: 700;
+    background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,182,193,0.3);
+  }
+  .pb-btn.primary { background: linear-gradient(135deg, #ff758c, #ff7eb3); color: #2a0410; border: none; }
+  .pb-btn.accent { background: rgba(255,215,0,0.12); color: #ffd700; border: 1px solid rgba(255,215,0,0.35); }
+  .pb-btn:active { transform: scale(0.96); }
 
   /* Buttons Styling */
   button {
@@ -1274,182 +604,74 @@
   </defs>
 </svg>
 
-<div class="home-butterfly-field">
-  <div class="home-flying-butterfly hbf1"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf2"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf3"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf4"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf5"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf6"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf7"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf8"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf9"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf10"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf11"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf12"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf13"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf14"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf15"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf16"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="home-flying-butterfly hbf17"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-</div>
-
 <div id="header">
-  <div class="header-butterfly-field">
-  <div class="header-flying-butterfly hdrbf1"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="header-flying-butterfly hdrbf2"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="header-flying-butterfly hdrbf3"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="header-flying-butterfly hdrbf4"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  <div class="header-flying-butterfly hdrbf5"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-    <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-    <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-  </svg></div></div>
-  </div>
-  <div class="butterfly-field">
-    <div class="flying-butterfly bf1"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf2"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf3"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf4"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf5"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf6"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf7"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf8"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPurple)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPurpleLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#5a1a70" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#9450b0" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf9"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradPink)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradPinkLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#7a1638" opacity="0.65"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#c23d68" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-    <div class="flying-butterfly bf10"><div class="bob"><svg class="butterfly-svg" viewBox="0 0 100 100">
-      <g class="wing wing-left" filter="url(#wingShadow)"><path d="M50 50 C 30 20, 5 20, 8 45 C 10 65, 30 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 35 55, 15 60, 15 75 C 15 88, 35 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="20" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="24" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 36 40, 20 34, 11 40 M50 50 C 40 58, 24 62, 17 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <g class="wing wing-right" filter="url(#wingShadow)"><path d="M50 50 C 70 20, 95 20, 92 45 C 90 65, 70 62, 50 50 Z" fill="url(#gradBlush)"/><path d="M50 50 C 65 55, 85 60, 85 75 C 85 88, 65 82, 50 55 Z" fill="url(#gradBlushLower)"/><ellipse cx="80" cy="34" rx="6" ry="4" fill="url(#glossHi)"/><circle cx="76" cy="66" r="3.2" fill="#a02248" opacity="0.6"/><path d="M50 50 C 64 40, 80 34, 89 40 M50 50 C 60 58, 76 62, 83 70" stroke="#e0668a" stroke-width="0.7" opacity="0.45" fill="none"/></g>
-      <ellipse cx="50" cy="52" rx="2.8" ry="16.5" fill="url(#bodyGrad)"/><path d="M47 40 L53 40 M47 46 L53 46 M47 52 L53 52 M47 58 L53 58 M47 64 L53 64" stroke="#0f0509" stroke-width="0.5" opacity="0.5"/><path d="M50 38 C 47 32, 43 30, 40 26 M50 38 C 53 32, 57 30, 60 26" stroke="#2c1420" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="40" cy="26" r="1.3" fill="#2c1420"/><circle cx="60" cy="26" r="1.3" fill="#2c1420"/>
-    </svg></div></div>
-  </div>
   <div class="title-area">
     <div class="title">Zaina Parveen</div>
   </div>
+  <button id="pbSettingsBtn" title="Butterfly Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#ffd7e6" stroke-width="1.8" width="19" height="19">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
   <div id="rightControls">
     <button id="addBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="10" height="15"><path d="M12 5v14M5 12h14"/></svg>
       Add Photo
     </button>
+  </div>
+</div>
+
+<!-- Home-screen layer where uploaded photo-butterflies fly -->
+<div id="pbFlyingLayer"></div>
+
+<!-- Butterfly List Overlay -->
+<div id="pbListOverlay" class="pb-list-overlay">
+  <div class="pb-list-header">
+    <span class="pb-list-title">BUTTERFLY LIST</span>
+    <button id="pbListClose" class="pb-list-close">✕</button>
+  </div>
+  <div class="pb-list-addrow">
+    <button id="pbAddBtn" class="pb-list-addbtn">+ ADD BUTTERFLY</button>
+  </div>
+  <div id="pbList" class="pb-list-body"></div>
+</div>
+
+<!-- Modify Butterfly Overlay -->
+<div id="pbModifyOverlay" class="pb-modify-overlay">
+  <div class="pb-modify-card">
+    <span class="pb-modify-icon">🦋</span>
+    <h3 class="pb-modify-heading">Modify Butterfly</h3>
+    <div class="pb-full-upload-section">
+      <label class="pb-full-upload-box" id="pbFullBox">
+        <span id="pbFullContent">🖼️ Upload Full Butterfly Image</span>
+        <input type="file" accept="image/*" id="pbFullInput" style="display:none;">
+      </label>
+    </div>
+    <h4 class="pb-wing-heading">Upload Wing Photos</h4>
+    <div class="pb-wing-slots">
+      <div class="pb-wing-slot">
+        <div class="pb-upload-box" id="pbLeftPreview">➕</div>
+        <span class="pb-slot-label">Left Wing</span>
+      </div>
+      <div class="pb-wing-slot">
+        <div class="pb-upload-box" id="pbRightPreview">➕</div>
+        <span class="pb-slot-label">Right Wing</span>
+      </div>
+    </div>
+    <div class="pb-size-control">
+      <span class="pb-slot-label">Butterfly Size</span>
+      <div class="pb-size-row">
+        <button class="pb-size-btn" id="pbSizeDec" type="button">−</button>
+        <input type="number" id="pbSizeInput" class="pb-size-input" min="20" max="90" step="2" value="42">
+        <button class="pb-size-btn" id="pbSizeInc" type="button">+</button>
+      </div>
+    </div>
+    <div class="pb-modify-actions">
+      <button class="pb-btn primary" id="pbApplyBtn">Apply Wings</button>
+      <button class="pb-btn accent" id="pbResetBtn">↺ Reset to Default</button>
+      <button class="pb-btn" id="pbModifyClose">Close</button>
+    </div>
   </div>
 </div>
 
@@ -2531,6 +1753,264 @@ okDel.addEventListener('click', async () => {
       updateHeaderState();
     });
   });
+})();
+
+// ===== Photo-Butterfly System =====
+(function () {
+  const LS_KEY = 'zaina_photo_butterflies';
+  const MIN_SIZE = 20, MAX_SIZE = 90, DEFAULT_SIZE = 42;
+
+  function loadButterflies() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) return p; }
+    } catch (e) {}
+    return [];
+  }
+  function saveButterflies(list) {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+  function uid() { return 'bf_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
+
+  let pbButterflies = loadButterflies();
+  let pbEditingId = null;
+  let pbPending = { left: null, right: null };
+  let pbPendingSize = DEFAULT_SIZE;
+
+  const pbSettingsBtn   = document.getElementById('pbSettingsBtn');
+  const pbListOverlay   = document.getElementById('pbListOverlay');
+  const pbListEl        = document.getElementById('pbList');
+  const pbAddBtn        = document.getElementById('pbAddBtn');
+  const pbListClose     = document.getElementById('pbListClose');
+
+  const pbModifyOverlay = document.getElementById('pbModifyOverlay');
+  const pbFullBox       = document.getElementById('pbFullBox');
+  const pbFullInput     = document.getElementById('pbFullInput');
+  const pbFullContent   = document.getElementById('pbFullContent');
+  const pbLeftPreview   = document.getElementById('pbLeftPreview');
+  const pbRightPreview  = document.getElementById('pbRightPreview');
+  const pbSizeInput     = document.getElementById('pbSizeInput');
+  const pbSizeDec       = document.getElementById('pbSizeDec');
+  const pbSizeInc       = document.getElementById('pbSizeInc');
+  const pbApplyBtn      = document.getElementById('pbApplyBtn');
+  const pbResetBtn      = document.getElementById('pbResetBtn');
+  const pbModifyClose   = document.getElementById('pbModifyClose');
+  const pbFlyingLayer   = document.getElementById('pbFlyingLayer');
+
+  function readFileAsDataURL(file, cb) {
+    const reader = new FileReader();
+    reader.onload = () => cb(reader.result);
+    reader.readAsDataURL(file);
+  }
+
+  function splitFullImage(dataUrl, cb) {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const halfW = Math.floor(w / 2);
+      const leftCanvas = document.createElement('canvas');
+      leftCanvas.width = halfW; leftCanvas.height = h;
+      leftCanvas.getContext('2d').drawImage(img, 0, 0, halfW, h, 0, 0, halfW, h);
+      const rightW = w - halfW;
+      const rightCanvas = document.createElement('canvas');
+      rightCanvas.width = rightW; rightCanvas.height = h;
+      rightCanvas.getContext('2d').drawImage(img, halfW, 0, rightW, h, 0, 0, rightW, h);
+      cb(leftCanvas.toDataURL('image/png'), rightCanvas.toDataURL('image/png'));
+    };
+    img.src = dataUrl;
+  }
+
+  pbFullBox.addEventListener('click', () => pbFullInput.click());
+  pbFullInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    readFileAsDataURL(file, (dataUrl) => {
+      splitFullImage(dataUrl, (l, r) => {
+        pbPending.left = l;
+        pbPending.right = r;
+        pbLeftPreview.innerHTML = `<img src="${l}" alt="left wing preview">`;
+        pbRightPreview.innerHTML = `<img src="${r}" alt="right wing preview">`;
+        pbFullContent.innerHTML = `<img src="${dataUrl}" class="pb-full-thumb" alt="full preview">Full Image Split ✔`;
+      });
+    });
+  });
+
+  function applyPbSize(size) {
+    pbPendingSize = Math.min(MAX_SIZE, Math.max(MIN_SIZE, parseInt(size) || DEFAULT_SIZE));
+    pbSizeInput.value = pbPendingSize;
+  }
+  pbSizeDec.addEventListener('click', () => applyPbSize(pbPendingSize - 2));
+  pbSizeInc.addEventListener('click', () => applyPbSize(pbPendingSize + 2));
+  pbSizeInput.addEventListener('change', () => applyPbSize(pbSizeInput.value));
+
+  function openModify(entry) {
+    pbEditingId = entry ? entry.id : null;
+    pbPending = { left: entry ? entry.left : null, right: entry ? entry.right : null };
+    applyPbSize(entry ? entry.size : DEFAULT_SIZE);
+    pbLeftPreview.innerHTML = entry && entry.left ? `<img src="${entry.left}" alt="left wing preview">` : '➕';
+    pbRightPreview.innerHTML = entry && entry.right ? `<img src="${entry.right}" alt="right wing preview">` : '➕';
+    pbFullContent.innerHTML = '🖼️ Upload Full Butterfly Image';
+    pbFullInput.value = '';
+    pbModifyOverlay.classList.add('show');
+  }
+  function closeModify() { pbModifyOverlay.classList.remove('show'); }
+
+  pbModifyClose.addEventListener('click', closeModify);
+  pbModifyOverlay.addEventListener('click', (e) => { if (e.target === pbModifyOverlay) closeModify(); });
+
+  pbResetBtn.addEventListener('click', () => {
+    pbPending = { left: null, right: null };
+    applyPbSize(DEFAULT_SIZE);
+    pbLeftPreview.innerHTML = '➕';
+    pbRightPreview.innerHTML = '➕';
+    pbFullContent.innerHTML = '🖼️ Upload Full Butterfly Image';
+    pbFullInput.value = '';
+  });
+
+  pbApplyBtn.addEventListener('click', () => {
+    if (!pbPending.left && !pbPending.right && !pbEditingId) { closeModify(); return; }
+    if (pbEditingId) {
+      const idx = pbButterflies.findIndex(b => b.id === pbEditingId);
+      if (idx > -1) {
+        pbButterflies[idx].left  = pbPending.left  || pbButterflies[idx].left;
+        pbButterflies[idx].right = pbPending.right || pbButterflies[idx].right;
+        pbButterflies[idx].size  = pbPendingSize;
+      }
+    } else {
+      pbButterflies.push({ id: uid(), left: pbPending.left, right: pbPending.right, size: pbPendingSize });
+    }
+    saveButterflies(pbButterflies);
+    renderPbList();
+    syncFlyingButterflies();
+    closeModify();
+  });
+
+  function renderPbList() {
+    pbListEl.innerHTML = '';
+    if (!pbButterflies.length) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'text-align:center;color:#00838f;padding:30px 10px;font-family:Poppins,sans-serif;font-size:13px;opacity:0.75;';
+      empty.textContent = 'No butterflies yet — tap + ADD BUTTERFLY';
+      pbListEl.appendChild(empty);
+      return;
+    }
+    pbButterflies.forEach((entry, idx) => {
+      const row = document.createElement('div');
+      row.className = 'pb-row';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'pb-row-thumb';
+      thumb.innerHTML = entry.left ? `<img src="${entry.left}" alt="butterfly">` : '🦋';
+
+      const label = document.createElement('span');
+      label.className = 'pb-row-label';
+      label.textContent = 'Butterfly ' + (idx + 1);
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'pb-row-btn';
+      editBtn.innerHTML = '✏️';
+      editBtn.onclick = () => openModify(entry);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'pb-row-btn';
+      delBtn.innerHTML = '🗑️';
+      delBtn.onclick = () => {
+        pbButterflies.splice(idx, 1);
+        saveButterflies(pbButterflies);
+        renderPbList();
+        syncFlyingButterflies();
+      };
+
+      row.appendChild(thumb);
+      row.appendChild(label);
+      row.appendChild(editBtn);
+      row.appendChild(delBtn);
+      pbListEl.appendChild(row);
+    });
+  }
+
+  pbSettingsBtn.addEventListener('click', () => {
+    renderPbList();
+    pbListOverlay.classList.add('show');
+  });
+  pbListClose.addEventListener('click', () => pbListOverlay.classList.remove('show'));
+  pbAddBtn.addEventListener('click', () => openModify(null));
+
+  // ---- Flying photo-butterflies on the home screen ----
+  const pbInstances = {};
+
+  function randomPoint() {
+    const margin = 44;
+    const w = window.innerWidth, h = window.innerHeight;
+    return {
+      x: margin + Math.random() * Math.max(1, w - margin * 2),
+      y: margin + Math.random() * Math.max(1, h - margin * 2)
+    };
+  }
+
+  function wingHtml(dataUrl) {
+    return dataUrl ? `<img src="${dataUrl}" class="pb-wing-photo" alt="wing">` : '🦋';
+  }
+
+  function createFlyingEl(entry) {
+    const el = document.createElement('div');
+    el.className = 'pb-flying';
+    el.style.setProperty('--pb-size', (entry.size || DEFAULT_SIZE) + 'px');
+    const startPt = randomPoint();
+    el.style.left = startPt.x + 'px';
+    el.style.top = startPt.y + 'px';
+    el.innerHTML =
+      '<div class="pb-wing-layer">' +
+        '<div class="pb-wing pb-left">' + wingHtml(entry.left) + '</div>' +
+        '<div class="pb-wing pb-right">' + wingHtml(entry.right) + '</div>' +
+      '</div>';
+    pbFlyingLayer.appendChild(el);
+    return el;
+  }
+
+  function flyLoop(id) {
+    const inst = pbInstances[id];
+    if (!inst) return;
+    const el = inst.el;
+    const pt = randomPoint();
+    const curLeft = parseFloat(el.style.left) || 0;
+    const curTop  = parseFloat(el.style.top)  || 0;
+    const dx = pt.x - curLeft, dy = pt.y - curTop;
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+    const dist = Math.hypot(dx, dy);
+    const duration = Math.max(2.2, Math.min(6, dist / 90));
+    el.style.transition = `left ${duration}s cubic-bezier(0.35,0,0.25,1), top ${duration}s cubic-bezier(0.35,0,0.25,1), transform 0.4s ease-out`;
+    el.style.transform = `rotate(${angle}deg)`;
+    el.style.left = pt.x + 'px';
+    el.style.top = pt.y + 'px';
+    inst.timeout = setTimeout(() => flyLoop(id), duration * 1000 + 700 + Math.random() * 900);
+  }
+
+  function syncFlyingButterflies() {
+    const currentIds = new Set(pbButterflies.map(b => b.id));
+    Object.keys(pbInstances).forEach((id) => {
+      if (!currentIds.has(id)) {
+        clearTimeout(pbInstances[id].timeout);
+        pbInstances[id].el.remove();
+        delete pbInstances[id];
+      }
+    });
+    pbButterflies.forEach((entry, idx) => {
+      if (!pbInstances[entry.id]) {
+        const el = createFlyingEl(entry);
+        pbInstances[entry.id] = { el, timeout: null };
+        setTimeout(() => flyLoop(entry.id), 300 + idx * 450);
+      } else {
+        const inst = pbInstances[entry.id];
+        inst.el.style.setProperty('--pb-size', (entry.size || DEFAULT_SIZE) + 'px');
+        inst.el.querySelector('.pb-left').innerHTML = wingHtml(entry.left);
+        inst.el.querySelector('.pb-right').innerHTML = wingHtml(entry.right);
+      }
+    });
+  }
+
+  renderPbList();
+  syncFlyingButterflies();
 })();
 </script>
 </body>
