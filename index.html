@@ -1755,24 +1755,12 @@ okDel.addEventListener('click', async () => {
   });
 })();
 
-// ===== Photo-Butterfly System =====
+// ===== Photo-Butterfly System (Firebase-synced) =====
 (function () {
-  const LS_KEY = 'zaina_photo_butterflies';
   const MIN_SIZE = 20, MAX_SIZE = 90, DEFAULT_SIZE = 42;
+  const butterfliesRef = db.ref('zaina_butterflies');
 
-  function loadButterflies() {
-    try {
-      const raw = localStorage.getItem(LS_KEY);
-      if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) return p; }
-    } catch (e) {}
-    return [];
-  }
-  function saveButterflies(list) {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch (e) {}
-  }
-  function uid() { return 'bf_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
-
-  let pbButterflies = loadButterflies();
+  let pbButterflies = {};   // id -> { left, right, size, order }
   let pbEditingId = null;
   let pbPending = { left: null, right: null };
   let pbPendingSize = DEFAULT_SIZE;
@@ -1797,10 +1785,10 @@ okDel.addEventListener('click', async () => {
   const pbModifyClose   = document.getElementById('pbModifyClose');
   const pbFlyingLayer   = document.getElementById('pbFlyingLayer');
 
-  function readFileAsDataURL(file, cb) {
-    const reader = new FileReader();
-    reader.onload = () => cb(reader.result);
-    reader.readAsDataURL(file);
+  function pbOrderedList() {
+    return Object.keys(pbButterflies)
+      .map(id => Object.assign({ id }, pbButterflies[id]))
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
   }
 
   function splitFullImage(dataUrl, cb) {
@@ -1815,7 +1803,7 @@ okDel.addEventListener('click', async () => {
       const rightCanvas = document.createElement('canvas');
       rightCanvas.width = rightW; rightCanvas.height = h;
       rightCanvas.getContext('2d').drawImage(img, halfW, 0, rightW, h, 0, 0, rightW, h);
-      cb(leftCanvas.toDataURL('image/png'), rightCanvas.toDataURL('image/png'));
+      cb(leftCanvas.toDataURL('image/jpeg', 0.8), rightCanvas.toDataURL('image/jpeg', 0.8));
     };
     img.src = dataUrl;
   }
@@ -1824,7 +1812,8 @@ okDel.addEventListener('click', async () => {
   pbFullInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    readFileAsDataURL(file, (dataUrl) => {
+    pbFullContent.innerHTML = '⏳ Processing…';
+    compressImage(file).then((dataUrl) => {
       splitFullImage(dataUrl, (l, r) => {
         pbPending.left = l;
         pbPending.right = r;
@@ -1867,34 +1856,44 @@ okDel.addEventListener('click', async () => {
     pbFullInput.value = '';
   });
 
-  pbApplyBtn.addEventListener('click', () => {
+  pbApplyBtn.addEventListener('click', async () => {
     if (!pbPending.left && !pbPending.right && !pbEditingId) { closeModify(); return; }
-    if (pbEditingId) {
-      const idx = pbButterflies.findIndex(b => b.id === pbEditingId);
-      if (idx > -1) {
-        pbButterflies[idx].left  = pbPending.left  || pbButterflies[idx].left;
-        pbButterflies[idx].right = pbPending.right || pbButterflies[idx].right;
-        pbButterflies[idx].size  = pbPendingSize;
+    pbApplyBtn.disabled = true;
+    try {
+      if (pbEditingId) {
+        const existing = pbButterflies[pbEditingId] || {};
+        const merged = {
+          left: pbPending.left || existing.left || null,
+          right: pbPending.right || existing.right || null,
+          size: pbPendingSize,
+          order: existing.order || Date.now()
+        };
+        await butterfliesRef.child(pbEditingId).set(merged);
+      } else {
+        const id = butterfliesRef.push().key;
+        await butterfliesRef.child(id).set({
+          left: pbPending.left,
+          right: pbPending.right,
+          size: pbPendingSize,
+          order: Date.now()
+        });
       }
-    } else {
-      pbButterflies.push({ id: uid(), left: pbPending.left, right: pbPending.right, size: pbPendingSize });
-    }
-    saveButterflies(pbButterflies);
-    renderPbList();
-    syncFlyingButterflies();
+    } catch (err) {}
+    pbApplyBtn.disabled = false;
     closeModify();
   });
 
   function renderPbList() {
+    const list = pbOrderedList();
     pbListEl.innerHTML = '';
-    if (!pbButterflies.length) {
+    if (!list.length) {
       const empty = document.createElement('div');
       empty.style.cssText = 'text-align:center;color:#00838f;padding:30px 10px;font-family:Poppins,sans-serif;font-size:13px;opacity:0.75;';
       empty.textContent = 'No butterflies yet — tap + ADD BUTTERFLY';
       pbListEl.appendChild(empty);
       return;
     }
-    pbButterflies.forEach((entry, idx) => {
+    list.forEach((entry, idx) => {
       const row = document.createElement('div');
       row.className = 'pb-row';
 
@@ -1914,12 +1913,7 @@ okDel.addEventListener('click', async () => {
       const delBtn = document.createElement('button');
       delBtn.className = 'pb-row-btn';
       delBtn.innerHTML = '🗑️';
-      delBtn.onclick = () => {
-        pbButterflies.splice(idx, 1);
-        saveButterflies(pbButterflies);
-        renderPbList();
-        syncFlyingButterflies();
-      };
+      delBtn.onclick = () => { butterfliesRef.child(entry.id).remove().catch(() => {}); };
 
       row.appendChild(thumb);
       row.appendChild(label);
@@ -1987,7 +1981,8 @@ okDel.addEventListener('click', async () => {
   }
 
   function syncFlyingButterflies() {
-    const currentIds = new Set(pbButterflies.map(b => b.id));
+    const list = pbOrderedList();
+    const currentIds = new Set(list.map(b => b.id));
     Object.keys(pbInstances).forEach((id) => {
       if (!currentIds.has(id)) {
         clearTimeout(pbInstances[id].timeout);
@@ -1995,7 +1990,7 @@ okDel.addEventListener('click', async () => {
         delete pbInstances[id];
       }
     });
-    pbButterflies.forEach((entry, idx) => {
+    list.forEach((entry, idx) => {
       if (!pbInstances[entry.id]) {
         const el = createFlyingEl(entry);
         pbInstances[entry.id] = { el, timeout: null };
@@ -2009,8 +2004,30 @@ okDel.addEventListener('click', async () => {
     });
   }
 
-  renderPbList();
-  syncFlyingButterflies();
+  // ---- Firebase real-time sync: every device (yours + your friend's) sees
+  // the same butterfly list and the same animated butterflies live ----
+  butterfliesRef.once('value', (snap) => {
+    pbButterflies = snap.val() || {};
+    renderPbList();
+    syncFlyingButterflies();
+
+    butterfliesRef.on('child_added', (s) => {
+      if (pbButterflies[s.key]) return;
+      pbButterflies[s.key] = s.val();
+      if (pbListOverlay.classList.contains('show')) renderPbList();
+      syncFlyingButterflies();
+    });
+    butterfliesRef.on('child_changed', (s) => {
+      pbButterflies[s.key] = s.val();
+      if (pbListOverlay.classList.contains('show')) renderPbList();
+      syncFlyingButterflies();
+    });
+    butterfliesRef.on('child_removed', (s) => {
+      delete pbButterflies[s.key];
+      if (pbListOverlay.classList.contains('show')) renderPbList();
+      syncFlyingButterflies();
+    });
+  });
 })();
 </script>
 </body>
