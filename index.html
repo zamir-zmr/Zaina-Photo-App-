@@ -691,7 +691,7 @@
       <span class="pb-slot-label">Butterfly Size</span>
       <div class="pb-size-row">
         <button class="pb-size-btn" id="pbSizeDec" type="button">−</button>
-        <input type="number" id="pbSizeInput" class="pb-size-input" min="20" max="90" step="2" value="42">
+        <input type="number" id="pbSizeInput" class="pb-size-input" min="20" max="90" step="2" value="30">
         <button class="pb-size-btn" id="pbSizeInc" type="button">+</button>
       </div>
     </div>
@@ -1785,7 +1785,7 @@ okDel.addEventListener('click', async () => {
 
 // ===== Photo-Butterfly System (Firebase-synced) =====
 (function () {
-  const MIN_SIZE = 20, MAX_SIZE = 90, DEFAULT_SIZE = 42;
+  const MIN_SIZE = 20, MAX_SIZE = 90, DEFAULT_SIZE = 30;
   const CACHE_KEY = 'zaina_bf_cache_v1';
   const SPEED_CACHE_KEY = 'zaina_bf_speed_cache_v1';
   const butterfliesRef = db.ref('zaina_butterflies');
